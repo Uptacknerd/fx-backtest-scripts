@@ -1,3 +1,4 @@
+#!/usr/bin/php
 <?php
 /*
     This program is free software: you can redistribute it and/or modify
@@ -43,11 +44,12 @@
 error("BIN to CSV: ");
 
 if (PHP_SAPI != "cli") {
-  exit;
+    exit;
 }
 
 if ($argc < 4) {
-    echo("Syntax: ".__FILE__." CURRENCY_PAIR START_DATE END_DATE OUT_FILE\nSTART_DATE and END_DATE must be of the form YYYYMMDD\nExample: ".__FILE__." EURUSD 20070201 20090830 out.csv\n");
+    echo ("Syntax: " . __FILE__ . " CURRENCY_PAIR START_DATE END_DATE OUT_FILE" . PHP_EOL
+    . "START_DATE and END_DATE must be of the form YYYYMMDD\nExample: " . __FILE__ . " EURUSD 20070201 20090830 out.csv" . PHP_EOL);
     exit;
 }
 $pair = $argv[1];
@@ -65,21 +67,18 @@ if (stripos(PHP_OS, 'win') === false || stripos(PHP_OS, 'darwin') !== false) {
     exec('lzma -h 2>/dev/null', $output);
     if (count($output) > 0) {
         $extract = 'lzma -kdc -S bi5 %s';
-    }
-    else {
+    } else {
         exec('xz -h 2>/dev/null', $output);
         if (count($output) > 0) {
             $extract = 'xz -dc %s';
         }
     }
-}
-else {
+} else {
     $iswindows = true;
     exec('7za 2>NUL', $output);
     if (count($output) > 0) {
         $extract = '7za e -o"%s" %s';
     }
-
 }
 if (strlen($extract) == 0) {
     echo "!!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!!!\n";
@@ -98,25 +97,26 @@ if (strlen($extract) == 0) {
 }
 
 $point = 0.00001;
-if (stripos($pair, 'jpy') !== false ||
+if (
+    stripos($pair, 'jpy') !== false ||
     strcasecmp($pair, 'usdrub') == 0 ||
     strcasecmp($pair, 'xagusd') == 0 ||
-    strcasecmp($pair, 'xauusd') == 0) {
+    strcasecmp($pair, 'xauusd') == 0
+) {
     $point = 0.001;
-}
-else if (stripos($pair, 'rub') !== false) {
+} else if (stripos($pair, 'rub') !== false) {
     $point = 0.001;
 }
 
 
-$outpath = $pair."_csv/";
-$outfile = $outpath.$argv[2]."-".$argv[3].".csv";
-$startyear = substr($argv[2],0,4);
-$startmonth = substr($argv[2],4,2);
-$startday = substr($argv[2],6,2);
-$endyear = substr($argv[3],0,4);
-$endmonth = substr($argv[3],4,2);
-$endday = substr($argv[3],6,2);
+$outpath = $pair . "_csv/";
+$outfile = $outpath . $argv[2] . "-" . $argv[3] . ".csv";
+$startyear = substr($argv[2], 0, 4);
+$startmonth = substr($argv[2], 4, 2);
+$startday = substr($argv[2], 6, 2);
+$endyear = substr($argv[3], 0, 4);
+$endmonth = substr($argv[3], 4, 2);
+$endday = substr($argv[3], 6, 2);
 if ($startyear < 1900 || $startyear > 2100 || $endyear < 1900 || $endyear > 2100 || $startmonth < 1 || $startmonth > 12 || $endmonth < 1 || $endmonth > 12) {
     echo "The input dates must be of the form YYYYMMDD, example 20080801\n";
     exit(1);
@@ -126,23 +126,23 @@ if (!file_exists($outpath)) {
     mkdir($outpath, 0777, true);
 }
 
-$outfd = fopen($outfile,'w');
+$outfd = fopen($outfile, 'w');
 if ($outfd === FALSE) {
     echo "Cannot open $outfile for writing.\n";
     exit(1);
 }
-$starttime = gmmktime(0,0,0,$startmonth,$startday,$startyear);
-$endtime = gmmktime(0,0,0,$endmonth,$endday,$endyear);
-print "Processing data starting from ".gmstrftime("%m/%d/%y %H:%M:%S",$starttime)." up to ".gmstrftime("%m/%d/%y %H:%M:%S",$endtime)."\n";
+$starttime = gmmktime(0, 0, 0, $startmonth, $startday, $startyear);
+$endtime = gmmktime(0, 0, 0, $endmonth, $endday, $endyear);
+print "Processing data starting from " . gmstrftime("%m/%d/%y %H:%M:%S", $starttime) . " up to " . gmstrftime("%m/%d/%y %H:%M:%S", $endtime) . "\n";
 $starttime -= $starttime % 3600;
 $tmpdir = tempnam(sys_get_temp_dir(), "tickdata-");
 unlink($tmpdir);
 mkdir($tmpdir);
-for($i = $starttime; $i < $endtime; $i += 3600) {
-    $year = gmstrftime('%Y',$i);
-    $month = str_pad(gmstrftime('%m',$i) - 1, 2, '0', STR_PAD_LEFT);
-    $day = gmstrftime('%d',$i);
-    $hour = gmstrftime('%H',$i);
+for ($i = $starttime; $i < $endtime; $i += 3600) {
+    $year = gmstrftime('%Y', $i);
+    $month = str_pad(gmstrftime('%m', $i) - 1, 2, '0', STR_PAD_LEFT);
+    $day = gmstrftime('%d', $i);
+    $hour = gmstrftime('%H', $i);
     $localpath = "$pair/$year/$month/$day/";
     $binlocalfile = $localpath . $hour . "h_ticks.bin";
     $localfile = $localpath . $hour . "h_ticks.bi5";
@@ -151,8 +151,7 @@ for($i = $starttime; $i < $endtime; $i += 3600) {
         if (!file_exists($binlocalfile)) {
             echo "Error: can't find $localfile or $binlocalfile\n";
             continue;
-        }
-        else {
+        } else {
             $localfile = $binlocalfile;
             $bin = true;
         }
@@ -160,68 +159,68 @@ for($i = $starttime; $i < $endtime; $i += 3600) {
     if (filesize($localfile) > 0) {
         if ($bin) {
             decode_ducascopy_bin($localfile, $outfd);
-        }
-        else {
+        } else {
             decode_ducascopy_bi5($localfile, $outfd, $i);
         }
-    }
-    else {
+    } else {
         echo "Warning: 0 sized $localfile\n";
     }
 }
 rmdir($tmpdir);
 fclose($outfd);
 
-error($argv[2]." ".$argv[3]." Done!");
+error($argv[2] . " " . $argv[3] . " Done!");
 
 
-function decode_ducascopy_bin($fname, $outfd) {
+function decode_ducascopy_bin($fname, $outfd)
+{
+    global $tmpdir;
+
     print "$fname\n";
     $zip = new ZipArchive;
     $res = $zip->open($fname);
-    if ($res!==true) {
+    if ($res !== true) {
         echo "Error: failed to open [$fname] code [$res]\n";
         exit(1);
     }
     $binname = $zip->getNameIndex(0);
-    global $tmpdir;
     $res = $zip->extractTo($tmpdir, $binname);
     if (!$res) {
         echo "Error: unable to extract from zip archive\n";
         exit(1);
     }
-    $bin = file_get_contents($tmpdir.'/'.$binname);
+    $bin = file_get_contents($tmpdir . '/' . $binname);
     if (strlen($bin) == 0) {
         echo "Error: unable to read extracted file\n";
         exit(1);
     }
-    unlink($tmpdir.'/'.$binname);
+    unlink($tmpdir . '/' . $binname);
     $idx = 0;
     $size = strlen($bin);
-    while($idx < $size) {
+    while ($idx < $size) {
         //print "$idx $size\n";
-        $q = unpack('@'.$idx.'/n4', $bin);
-        $time = bcmul('4294967296', bcadd($q['2'],bcmul($q['1'],65536)));
-        $time = bcadd($time, bcadd($q['4'],bcmul($q['3'],65536)));
+        $q = unpack('@' . $idx . '/n4', $bin);
+        $time = bcmul('4294967296', bcadd($q['2'], bcmul($q['1'], 65536)));
+        $time = bcadd($time, bcadd($q['4'], bcmul($q['3'], 65536)));
         $timesec = bcdiv($time, 1000);
         $timems = bcmod($time, 1000);
 
-        $q = unpack('@'.($idx + 8)."/N2", $bin);
+        $q = unpack('@' . ($idx + 8) . "/N2", $bin);
         $s = pack('V2', $q[2], $q[1]);
         $q = unpack('d', $s);
         $ask = $q[1];
 
-        $q = unpack('@'.($idx + 16)."/N2", $bin);
+        $q = unpack('@' . ($idx + 16) . "/N2", $bin);
         $s = pack('V2', $q[2], $q[1]);
         $q = unpack('d', $s);
         $bid = $q[1];
 
-        $q = unpack('@'.($idx + 24)."/N2", $bin);
+        $q = unpack('@' . ($idx + 24) . "/N2", $bin);
         $s = pack('V2', $q[2], $q[1]);
         $q = unpack('d', $s);
         $askvol = $q[1];
 
-        $q = unpack('@'.($idx + 32)."/N2", $bin);
+        $q = unpack('@' . ($idx + 32) . "/N2", $bin);
         $s = pack('V2', $q[2], $q[1]);
         $q = unpack('d', $s);
         $bidvol = $q[1];
@@ -232,19 +231,21 @@ function decode_ducascopy_bin($fname, $outfd) {
         if ($ask == intval($ask)) {
             $ask = number_format($ask, 1, '.', '');
         }
-        fwrite($outfd, gmstrftime("%Y.%m.%d %H:%M:%S", $timesec).".".str_pad($timems,3,'0',STR_PAD_LEFT).",$bid,$ask,".number_format($bidvol,0,'','').",".number_format($askvol,0,'','')."\n");
+        fwrite($outfd, gmstrftime("%Y.%m.%d %H:%M:%S", $timesec) . "." . str_pad($timems, 3, '0', STR_PAD_LEFT) . ",$bid,$ask," . number_format($bidvol, 0, '', '') . "," . number_format($askvol, 0, '', '') . "\n");
 
         $idx += 40;
     }
 }
 
-function decode_ducascopy_bi5($fname, $outfd, $hourtimestamp) {
-    print "$fname\n";
+function decode_ducascopy_bi5($fname, $outfd, $hourtimestamp)
+{
     global $iswindows, $extract, $tmpdir, $point;
+
+    print "$fname\n";
     if ($iswindows) {
         $cmd = sprintf($extract, $tmpdir, $fname);
         shell_exec($cmd);
-        $extracted = $tmpdir.'\\'.substr($fname, strrpos($fname, '/') + 1);
+        $extracted = $tmpdir . '\\' . substr($fname, strrpos($fname, '/') + 1);
         $extracted = substr($extracted, 0, strrpos($extracted, '.'));
         if (!file_exists($extracted)) {
             echo "Error: failed to extract [$fname]\n";
@@ -252,8 +253,7 @@ function decode_ducascopy_bi5($fname, $outfd, $hourtimestamp) {
         }
         $bin = file_get_contents($extracted);
         unlink($extracted);
-    }
-    else {
+    } else {
         $cmd = sprintf($extract, $fname);
         $bin = shell_exec($cmd);
     }
@@ -263,23 +263,23 @@ function decode_ducascopy_bi5($fname, $outfd, $hourtimestamp) {
     }
     $idx = 0;
     $size = strlen($bin);
-    while($idx < $size) {
+    while ($idx < $size) {
         //print "$idx $size\n";
-        $q = unpack('@'.$idx.'/N', $bin);
+        $q = unpack('@' . $idx . '/N', $bin);
         $deltat = $q[1];
         $timesec = $hourtimestamp + $deltat / 1000;
         $timems = $deltat % 1000;
 
 
-        $q = unpack('@'.($idx + 4)."/N", $bin);
+        $q = unpack('@' . ($idx + 4) . "/N", $bin);
         $ask = $q[1] * $point;
-        $q = unpack('@'.($idx + 8)."/N", $bin);
+        $q = unpack('@' . ($idx + 8) . "/N", $bin);
         $bid = $q[1] * $point;
-        $q = unpack('@'.($idx + 12)."/C4", $bin);
+        $q = unpack('@' . ($idx + 12) . "/C4", $bin);
         $s = pack('C4', $q[4], $q[3], $q[2], $q[1]);
         $q = unpack('f', $s);
         $askvol = $q[1];
-        $q = unpack('@'.($idx + 16)."/C4", $bin);
+        $q = unpack('@' . ($idx + 16) . "/C4", $bin);
         $s = pack('C4', $q[4], $q[3], $q[2], $q[1]);
         $q = unpack('f', $s);
         $bidvol = $q[1];
@@ -290,13 +290,14 @@ function decode_ducascopy_bi5($fname, $outfd, $hourtimestamp) {
         if ($ask == intval($ask)) {
             $ask = number_format($ask, 1, '.', '');
         }
-        fwrite($outfd, gmstrftime("%Y.%m.%d %H:%M:%S", $timesec).".".str_pad($timems,3,'0',STR_PAD_LEFT).",$bid,$ask,".number_format($bidvol,2,'.','').",".number_format($askvol,2,'.','')."\n");
+        fwrite($outfd, gmstrftime("%Y.%m.%d %H:%M:%S", $timesec) . "." . str_pad($timems, 3, '0', STR_PAD_LEFT) . ",$bid,$ask," . number_format($bidvol, 2, '.', '') . "," . number_format($askvol, 2, '.', '') . "\n");
         $idx += 20;
     }
 }
 
 
-function error($error) {
+function error($error)
+{
     echo $error;
     $fd = fopen('errorbin2csv.log', 'a+');
     fwrite($fd, $error);

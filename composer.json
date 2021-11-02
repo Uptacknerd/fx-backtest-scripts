@@ -1,0 +1,15 @@
+{
+    "name": "uptacknerd/fx-bt-scripts",
+    "type": "project",
+    "require": {
+        "ext-mbstring": "*",
+        "ext-curl": "*",
+        "docopt/docopt": "^1.0",
+        "ext-zlib": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Uptacknerd\\FxBtScripts\\": "src/"
+        }
+    }
+}

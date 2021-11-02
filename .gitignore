@@ -6,3 +6,5 @@ build.properties
 
 # Ignore Python cache folder.
 __pycache__
+
+/vendor/

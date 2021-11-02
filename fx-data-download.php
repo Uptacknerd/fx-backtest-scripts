@@ -1,3 +1,4 @@
+#!/usr/bin/php
 <?php
 /*
     This program is free software: you can redistribute it and/or modify
@@ -38,253 +39,251 @@
 
 */
 
+$symbols = [
+    //"EURUSD" => 1175270400, // starting from 2007.03.30 16:00
+    "XAUUSD" => Datetime::createFromFormat('Y-m-d H:i:s', '2021-11-01 00:00:00', new DateTimeZone('UTC'))->format('U'), // starting from 2011.05.10 07:00
+];
 if (file_exists('symbols.php')) {
-  require 'symbols.php';
-} else {
-  $symbols = array (
-    "EURUSD" => 1175270400, // starting from 2007.03.30 16:00
-  );
+    require 'symbols.php';
 }
 
 if (empty($symbols)) {
+    $symbols = [
+        "ADSDEEUR"      => 1426201200, # starting from 2015.03.13 00:00
+        "ALVDEEUR"      => 1429394400, # starting from 2015.04.19 00:00
+        "AUSIDXAUD"     => 1402524000, # starting from 2014.06.12 00:00
+        "BASDEEUR"      => 1429678800, # starting from 2015.04.22 07:00
+        "BAYNDEEUR"     => 1426806000, # starting from 2015.03.20 00:00
+        "BEIDEEUR"      => 1428444000, # starting from 2015.04.08 00:00
+        "BMWDEEUR"      => 1427151600, # starting from 2015.03.24 00:00
+        "BRENTCMDUSD"   => 1291244400, # starting from 2010.12.02 00:00
+        "CHEIDXCHF"     => 1356994800, # starting from 2013.01.01 00:00
+        "CONDEEUR"      => 1428444000, # starting from 2015.04.08 00:00
+        "DAIDEEUR"      => 1427410800, # starting from 2015.03.27 00:00
+        "DB1DEEUR"      => 1428962400, # starting from 2015.04.14 00:00
+        "DBKDEEUR"      => 1427238000, # starting from 2015.03.25 00:00
+        "DEUIDXEUR"     => 1356994800, # starting from 2013.01.01 00:00
+        "DTEDEEUR"      => 1427752800, # starting from 2015.03.31 00:00
+        "EOANDEEUR"     => 1429480800, # starting from 2015.04.20 00:00
+        "ESPIDXEUR"     => 1427238000, # starting from 2015.03.25 00:00
+        "EUSIDXEUR"     => 1433196000, # starting from 2015.06.02 00:00
+        "FMEDEEUR"      => 1427839200, # starting from 2015.04.01 00:00
+        "FRAIDXEUR"     => 1356994800, # starting from 2013.01.01 00:00
+        "FREDEEUR"      => 1428616800, # starting from 2015.04.10 00:00
+        "HEIDEEUR"      => 1427925600, # starting from 2015.04.02 00:00
+        "HEN3DEEUR"     => 1429567200, # starting from 2015.04.21 00:00
+        "HKGIDXHKD"     => 1370210400, # starting from 2013.06.03 00:00
+        "IFXDEEUR"      => 1428876000, # starting from 2015.04.13 00:00
+        "JPNIDXJPY"     => 1356994800, # starting from 2013.01.01 00:00
+        "LHADEEUR"      => 1429567200, # starting from 2015.04.21 00:00
+        "LIGHTCMDUSD"   => 1427839200, # starting from 2015.04.01 00:00
+        "LINDEEUR"      => 1429567200, # starting from 2015.04.21 00:00
+        "LXSDEEUR"      => 1429567200, # starting from 2015.04.21 00:00
+        "MRKDEEUR"      => 1427151600, # starting from 2015.03.24 00:00
+        "MUV2DEEUR"     => 1429567200, # starting from 2015.04.21 00:00
+        "PAH3DEEUR"     => 1429567200, # starting from 2015.04.21 00:00
+        "PSMDEEUR"      => 1429480800, # starting from 2015.04.20 00:00
+        "RWEDEEUR"      => 1429135200, # starting from 2015.04.16 00:00
+        "SAPDEEUR"      => 1429135200, # starting from 2015.04.16 00:00
+        "SDFDEEUR"      => 1429048800, # starting from 2015.04.15 00:00
+        "SIEDEEUR"      => 1429480800, # starting from 2015.04.20 00:00
+        "TKADEEUR"      => 1428962400, # starting from 2015.04.14 00:00
+        "TUI1DEEUR"     => 1429048800, # starting from 2015.04.15 00:00
+        "USA30IDXUSD"   => 1356994800, # starting from 2013.01.01 00:00
+        "USA500IDXUSD"  => 1356994800, # starting from 2013.01.01 00:00
+        "USATECHIDXUSD" => 1356994800, # starting from 2013.01.01 00:00
+        "VNADEEUR"      => 1428962400, # starting from 2015.04.14 00:00
+        "VOW3DEEUR"     => 1428962400, # starting from 2015.04.14 00:00
 
-  $symbols = array(
-
-      "ADSDEEUR" => 1426201200, # starting from 2015.03.13 00:00
-      "ALVDEEUR" => 1429394400, # starting from 2015.04.19 00:00
-      "AUSIDXAUD" => 1402524000, # starting from 2014.06.12 00:00
-      "BASDEEUR" => 1429678800, # starting from 2015.04.22 07:00
-      "BAYNDEEUR" => 1426806000, # starting from 2015.03.20 00:00
-      "BEIDEEUR" => 1428444000, # starting from 2015.04.08 00:00
-      "BMWDEEUR" => 1427151600, # starting from 2015.03.24 00:00
-      "BRENTCMDUSD" => 1291244400, # starting from 2010.12.02 00:00
-      "CHEIDXCHF" => 1356994800, # starting from 2013.01.01 00:00
-      "CONDEEUR" => 1428444000, # starting from 2015.04.08 00:00
-      "DAIDEEUR" => 1427410800, # starting from 2015.03.27 00:00
-      "DB1DEEUR" => 1428962400, # starting from 2015.04.14 00:00
-      "DBKDEEUR" => 1427238000, # starting from 2015.03.25 00:00
-      "DEUIDXEUR" => 1356994800, # starting from 2013.01.01 00:00
-      "DTEDEEUR" => 1427752800, # starting from 2015.03.31 00:00
-      "EOANDEEUR" => 1429480800, # starting from 2015.04.20 00:00
-      "ESPIDXEUR" => 1427238000, # starting from 2015.03.25 00:00
-      "EUSIDXEUR" => 1433196000, # starting from 2015.06.02 00:00
-      "FMEDEEUR" => 1427839200, # starting from 2015.04.01 00:00
-      "FRAIDXEUR" => 1356994800, # starting from 2013.01.01 00:00
-      "FREDEEUR" => 1428616800, # starting from 2015.04.10 00:00
-      "HEIDEEUR" => 1427925600, # starting from 2015.04.02 00:00
-      "HEN3DEEUR" => 1429567200, # starting from 2015.04.21 00:00
-      "HKGIDXHKD" => 1370210400, # starting from 2013.06.03 00:00
-      "IFXDEEUR" => 1428876000, # starting from 2015.04.13 00:00
-      "JPNIDXJPY" => 1356994800, # starting from 2013.01.01 00:00
-      "LHADEEUR" => 1429567200, # starting from 2015.04.21 00:00
-      "LIGHTCMDUSD" => 1427839200, # starting from 2015.04.01 00:00
-      "LINDEEUR" => 1429567200, # starting from 2015.04.21 00:00
-      "LXSDEEUR" => 1429567200, # starting from 2015.04.21 00:00
-      "MRKDEEUR" => 1427151600, # starting from 2015.03.24 00:00
-      "MUV2DEEUR" => 1429567200, # starting from 2015.04.21 00:00
-      "PAH3DEEUR" => 1429567200, # starting from 2015.04.21 00:00
-      "PSMDEEUR" => 1429480800, # starting from 2015.04.20 00:00
-      "RWEDEEUR" => 1429135200, # starting from 2015.04.16 00:00
-      "SAPDEEUR" => 1429135200, # starting from 2015.04.16 00:00
-      "SDFDEEUR" => 1429048800, # starting from 2015.04.15 00:00
-      "SIEDEEUR" => 1429480800, # starting from 2015.04.20 00:00
-      "TKADEEUR" => 1428962400, # starting from 2015.04.14 00:00
-      "TUI1DEEUR" => 1429048800, # starting from 2015.04.15 00:00
-      "USA30IDXUSD" => 1356994800, # starting from 2013.01.01 00:00
-      "USA500IDXUSD" => 1356994800, # starting from 2013.01.01 00:00
-      "USATECHIDXUSD" => 1356994800, # starting from 2013.01.01 00:00
-      "VNADEEUR" => 1428962400, # starting from 2015.04.14 00:00
-      "VOW3DEEUR" => 1428962400, # starting from 2015.04.14 00:00
-
-      // commodities - energy
-      #"E_Light" => 1324375200, // Light starting from 2011.12.20 10:00
-      #"E_Brent" => 1326988800, // Brent starting from 2012.01.19 16:00
-      // commodities - metals
-      #"E_Copper" => 1326988800, // Copper starting from 2012.01.19 16:00
-      #"E_Palladium" => 1326988800, // Palladium starting from 2012.01.19 16:00
-      #"E_Platinum" => 1326988800, // Platinum starting from 2012.01.19 16:00
-      // indices - Europe
-      #"E_DJE50XX" => 1326988800, // Europe 50 starting from 2012.01.19 16:00
-      #"E_CAAC40" => 1326988800, // France 40 starting from 2012.01.19 16:00
-      #"E_Futsee100" => 1326988800, // UK 100 starting from 2012.01.19 16:00
-      #"E_DAAX" => 1326988800, // Germany 30 starting from 2012.01.19 16:00
-      #"E_SWMI" => 1326988800, // Switzerland 20 starting from 2012.01.19 16:00
-      // indices - Americas
-      #"E_NQcomp" => 1326988800, // US Tech Composite starting from 2012.01.19 16:00
-      "E_Nysseecomp" => 1326988800, // US Composite starting from 2012.01.19 16:00
-      #"E_DJInd" => 1326988800, // US 30 starting from 2012.01.19 16:00
-      #"E_NQ100" => 1326988800, // US 100 Tech starting from 2012.01.19 16:00
-      #"E_SandP500" => 1326988800, // US 500 starting from 2012.01.19 16:00
-      #"E_AMMEKS" => 1326988800, // US Average starting from 2012.01.19 16:00
-      // indices - Asia / Pacific
-      #"E_HKong" => 1328475600, // Hong Kong 40 starting from 2012.02.05 21:00
-      "E_SCKorea" => 1326988800, // Korea 200 starting from 2012.01.19 16:00
-      #"E_N225Jap" => 1328486400, // Japan 225 starting from 2012.02.06 00:00
-      // stocks - Australia
-      #"E_ANZASX" => 1348146000, // Australia & Nz Banking starting from 2012.09.20 13:00
-      #"E_BHPASX" => 1348156800, // Bhp Billiton starting from 2012.09.20 16:00
-      #"E_CBAASX" => 1348156800, // Commonwealth Bank Of Australia starting from 2012.09.20 16:00
-      #"E_NABASX" => 1348156800, // National Australia Bank starting from 2012.09.20 16:00
-      #"E_WBCASX" => 1348156800, // Westpac Banking starting from 2012.09.20 16:00
-      // stocks - Hungary
-      #"E_EGISBUD" => 1348146000, // Egis Nyrt starting from 2012.09.20 13:00
-      #"E_MOLBUD" => 1348146000, // Mol Hungarian Oil & Gas Nyrt starting from 2012.09.20 13:00
-      #"E_MTELEKOMBUD" => 1348146000, // Magyar Telekom Telecommunications starting from 2012.09.20 13:00
-      #"E_OTPBUD" => 1348146000, // Ot Bank Nyrt starting from 2012.09.20 13:00
-      #"E_RICHTERBUD" => 1348146000, // Richter Gedeon Nyrt starting from 2012.09.20 13:00
-      // stocks - France
-      #"E_BNPEEB" => 1341594000, // BNP Paribas starting from 2012.07.06 17:00
-      #"E_FPEEB" => 1341594000, // Total starting from 2012.07.06 17:00
-      #"E_FTEEEB" => 1341594000, // France Telecom starting from 2012.07.06 17:00
-      #"E_MCEEB" => 1341594000, // LVMH Moet Hennessy Louis Vuitton starting from 2012.07.06 17:00
-      #"E_SANEEB" => 1341594000, // Sanofi starting from 2012.07.06 17:00
-      // stocks - Netherlands
-      #"E_MTEEB" => 1333101600, // ArcelorMittal starting from 2012.03.30 10:00
-      #"E_PHIA" => 1341406800, // Koninklijke Philips Electronics starting from 2012.07.04 13:00
-      #"E_RDSAEEB" => 1333101600, // Royal Dutch Shell starting from 2012.03.30 10:00
-      #"E_UNAEEB" => 1333101600, // Unilever starting from 2012.03.30 10:00
-      // stocks - Germany
-      #"E_BAY" => 1330948800, // Bayer starting from 2012.03.05 12:00
-      #"E_BMWXET" => 1333101600, // BMW starting from 2012.03.30 10:00
-      #"E_EOANXET" => 1333101600, // E.On starting from 2012.03.30 10:00
-      #"E_SIEXET" => 1341604800, // Siemens starting from 2012.07.06 20:00
-      #"E_VOWXET" => 1341604800, // Volkswagen starting from 2012.07.06 20:00
-      // stocks - Hong Kong
-      #"E_0883HKG" => 1341781200, // CNOOC starting from 2012.07.08 21:00
-      #"E_0939HKG" => 1341784800, // China Construction Bank starting from 2012.07.08 22:00
-      #"E_0941HKG" => 1341781200, // China Mobile starting from 2012.07.08 21:00
-      #"E_1398HKG" => 1341781200, // ICBC starting from 2012.07.08 21:00
-      #"E_3988HKG" => 1341784800, // Bank Of China starting from 2012.07.08 22:00
-      // stocks - UK
-      #"E_BLTLON" => 1333101600, // BHP Billiton starting from 2012.03.30 10:00
-      #"E_BP" => 1326988800, // BP starting from 2012.01.19 16:00
-      #"E_HSBA" => 1326988800, // HSBC Holdings starting from 2012.01.19 16:00
-      #"E_RIOLON" => 1333101600, // Rio Tinto starting from 2012.03.30 10:00
-      #"E_VODLON" => 1333101600, // Vodafone starting from 2012.03.30 10:00
-      // stocks - Spain
-      #"E_BBVAMAC" => 1348149600, // BBVA starting from 2012.09.20 14:00
-      #"E_IBEMAC" => 1348149600, // Iberdrola starting from 2012.09.20 14:00
-      #"E_REPMAC" => 1348149600, // Repsol starting from 2012.09.20 14:00
-      #"E_SANMAC" => 1348149600, // Banco Santander starting from 2012.09.20 14:00
-      #"E_TEFMAC" => 1348149600, // Telefonica starting from 2012.09.20 14:00
-      // stocks - Italy
-      #"E_EN" => 1348146000, // Enel starting from 2012.09.20 13:00
-      #"E_ENIMIL" => 1348146000, // Eni starting from 2012.09.20 13:00
-      #"E_FIA" => 1348146000, // Fiat starting from 2012.09.20 13:00
-      #"E_GMIL" => 1348146000, // Generali starting from 2012.09.20 13:00
-      #"E_ISPMIL" => 1348146000, // Intesa Sanpaolo starting from 2012.09.20 13:00
-      #"E_UCGMIL" => 1348146000, // Unicredit starting from 2012.09.20 13:00
-      // stocks - Denmark
-      #"E_CARL_BOMX" => 1348149600, // Carlsberg starting from 2012.09.20 14:00
-      #"E_DANSKEOMX" => 1348149600, // Danske Bank starting from 2012.09.20 14:00
-      #"E_MAERSK_BOMX" => 1348149600, // Moeller Maersk B starting from 2012.09.20 14:00
-      #"E_NOVO_BOMX" => 1348149600, // Novo Nordisk starting from 2012.09.20 14:00
-      #"E_VWSOMX" => 1348149600, // Vestas Wind starting from 2012.09.20 14:00
-      // stocks - Sweden
-      #"E_SHB_AOMX" => 1348149600, // Svenska Handelsbanken starting from 2012.09.20 14:00
-      #"E_SWED_AOMX" => 1348149600, // Swedbank starting from 2012.09.20 14:00
-      #"E_TLSNOMX" => 1348149600, // Teliasonera starting from 2012.09.20 14:00
-      #"E_VOLV_BOMX" => 1348149600, // Volvo B starting from 2012.09.20 14:00
-      #"E_NDAOMX" => 1348149600, // Nordea Bank starting from 2012.09.20 14:00
-      // stocks - Norway
-      #"E_DNBOSL" => 1348146000, // DNB starting from 2012.09.20 13:00
-      #"E_SDRLOSL" => 1348146000, // Seadrill starting from 2012.09.20 13:00
-      #"E_STLOSL" => 1348146000, // StatoilHydro starting from 2012.09.20 13:00
-      #"E_TELOSL" => 1348146000, // Telenor starting from 2012.09.20 13:00
-      #"E_YAROSL" => 1348146000, // Yara starting from 2012.09.20 13:00
-      // stocks - Singapore
-      #"E_C07SES" => 1348149600, // Jardine Matheson starting from 2012.09.20 14:00
-      #"E_D05SES" => 1348149600, // DBS Group starting from 2012.09.20 14:00
-      #"E_O39SES" => 1348153200, // Oversea-Chinese Banking starting from 2012.09.20 15:00
-      #"E_U11SES" => 1348149600, // United Overseas Bank starting from 2012.09.20 14:00
-      #"E_Z74SES" => 1348149600, // Singapore Telecommunications starting from 2012.09.20 14:00
-      // stocks - Switzerland
-      #"E_CSGN" => 1326988800, // Cs Group starting from 2012.01.19 16:00
-      #"E_NESN" => 1326988800, // Nestle starting from 2012.01.19 16:00
-      #"E_NOVNSWX" => 1333101600, // Novartis starting from 2012.03.30 10:00
-      #"E_UBSN" => 1326988800, // UBS starting from 2012.01.19 16:00
-      // stocks - Austria
-      #"E_ANDRVIE" => 1348149600, // Andritz starting from 2012.09.20 14:00
-      #"E_EBS" => 1348149600, // Erste Group Bank starting from 2012.09.20 14:00
-      #"E_OMVVIE" => 1348149600, // OMV starting from 2012.09.20 14:00
-      #"E_RBIVIE" => 1348149600, // Raiffeisen Bank starting from 2012.09.20 14:00
-      #"E_VOE" => 1348149600, // Voestalpine starting from 2012.09.20 14:00
-      // stocks - Poland
-      #"E_KGHWAR" => 1348146000, // KGHM Polska Miedz starting from 2012.09.20 13:00
-      #"E_PEOWAR" => 1348146000, // Bank Pekao starting from 2012.09.20 13:00
-      #"E_PKNWAR" => 1348146000, // Polski Koncern Naftowy Orlen starting from 2012.09.20 13:00
-      #"E_PKOBL1WAR" => 1348146000, // Powszechna Kasa Oszczednosci Bank Polski starting from 2012.09.20 13:00
-      #"E_PZUWAR" => 1348146000, // Powszechny Zaklad Ubezpieczen starting from 2012.09.20 13:00
-      // stocks - US
-      #"E_AAPL" => 1333101600, // Apple starting from 2012.03.30 10:00
-      #"E_AMZN" => 1324375200, // Amazon starting from 2011.12.20 10:00
-      #"E_AXP" => 1326988800, // American Express starting from 2012.01.19 16:00
-      #"E_BAC" => 1324375200, // Bank Of America starting from 2011.12.20 10:00
-      #"E_CL" => 1333101600, // Colgate Palmolive starting from 2012.03.30 10:00
-      #"E_CSCO" => 1324375200, // Cisco starting from 2011.12.20 10:00
-      #"E_DELL" => 1326988800, // Dell starting from 2012.01.19 16:00
-      #"E_DIS" => 1324375200, // Disney Walt starting from 2011.12.20 10:00
-      #"E_EBAY" => 1326988800, // Ebay starting from 2012.01.19 16:00
-      #"E_GE" => 1324375200, // General Electric starting from 2011.12.20 10:00
-      #"E_GM" => 1324375200, // General Motors starting from 2011.12.20 10:00
-      #"E_GOOGL" => 1324375200, // Google starting from 2011.12.20 10:00
-      #"E_HD" => 1326988800, // Home Depot starting from 2012.01.19 16:00
-      #"E_HPQ" => 1324375200, // Hewlett Packard starting from 2011.12.20 10:00
-      #"E_IBM" => 1324375200, // IBM starting from 2011.12.20 10:00
-      #"E_INTC" => 1324375200, // Intel starting from 2011.12.20 10:00
-      #"E_JNJ" => 1324375200, // Johnson & Johnson starting from 2011.12.20 10:00
-      #"E_JPM" => 1324375200, // JPMorgan Chase starting from 2011.12.20 10:00
-      #"E_KO" => 1324375200, // Coca Cola starting from 2011.12.20 10:00
-      #"E_MCD" => 1324375200, // McDonalds starting from 2011.12.20 10:00
-      #"E_MMM" => 1324375200, // 3M starting from 2011.12.20 10:00
-      #"E_MSFT" => 1324375200, // Microsoft starting from 2011.12.20 10:00
-      #"E_ORCL" => 1324375200, // Oracle starting from 2011.12.20 10:00
-      #"E_PG" => 1324375200, // Procter & Gamble starting from 2011.12.20 10:00
-      #"E_PM" => 1333105200, // Philip Morris starting from 2012.03.30 11:00
-      #"E_SBUX" => 1326988800, // Starbucks starting from 2012.01.19 16:00
-      #"E_T" => 1324378800, // AT&T starting from 2011.12.20 11:00
-      #"E_UPS" => 1333105200, // UPS starting from 2012.03.30 11:00
-      "E_VIXX" => 1326988800, // Cboe Volatility Index starting from 2012.01.19 16:00
-      #"E_WMT" => 1326988800, // Wal-Mart Stores starting from 2012.01.19 16:00
-      #"E_XOM" => 1324375200, // Exxon Mobil starting from 2011.12.20 10:00
-      #"E_YHOO" => 1326988800, // Yahoo starting from 2012.01.19 16:00
-      // Currency pairs.
-      "EURUSD" => 1175270400, // starting from 2007.03.30 16:00
-      "AUDNZD" => 1229961600, // starting from 2008.12.22 16:00
-      "AUDUSD" => 1175270400, // starting from 2007.03.30 16:00
-      "AUDJPY" => 1175270400, // starting from 2007.03.30 16:00
-      "EURCHF" => 1175270400, // starting from 2007.03.30 16:00
-      "EURGBP" => 1175270400, // starting from 2007.03.30 16:00
-      "EURJPY" => 1175270400, // starting from 2007.03.30 16:00
-      "GBPCHF" => 1175270400, // starting from 2007.03.30 16:00
-      "GBPJPY" => 1175270400, // starting from 2007.03.30 16:00
-      "GBPUSD" => 1175270400, // starting from 2007.03.30 16:00
-      "NZDUSD" => 1175270400, // starting from 2007.03.30 16:00
-      "USDCAD" => 1175270400, // starting from 2007.03.30 16:00
-      "USDCHF" => 1175270400, // starting from 2007.03.30 16:00
-      "USDJPY" => 1175270400, // starting from 2007.03.30 16:00
-      "CADJPY" => 1175270400, // starting from 2007.03.30 16:00
-      "EURAUD" => 1175270400, // starting from 2007.03.30 16:00
-      "CHFJPY" => 1175270400, // starting from 2007.03.30 16:00
-      "EURCAD" => 1222167600, // starting from 2008.09.23 11:00
-      "EURNOK" => 1175270400, // starting from 2007.03.30 16:00
-      "EURSEK" => 1175270400, // starting from 2007.03.30 16:00
-      "USDNOK" => 1222639200, // starting from 2008.09.28 22:00
-      "USDSEK" => 1222642800, // starting from 2008.09.28 23:00
-      "USDSGD" => 1222642800, // starting from 2008.09.28 23:00
-      "AUDCAD" => 1266318000, // starting from 2010.02.16 11:00
-      "AUDCHF" => 1266318000, // starting from 2010.02.16 11:00
-      "CADCHF" => 1266318000, // starting from 2010.02.16 11:00
-      "EURNZD" => 1266318000, // starting from 2010.02.16 11:00
-      "GBPAUD" => 1266318000, // starting from 2010.02.16 11:00
-      "GBPCAD" => 1266318000, // starting from 2010.02.16 11:00
-      "GBPNZD" => 1266318000, // starting from 2010.02.16 11:00
-      "NZDCAD" => 1266318000, // starting from 2010.02.16 11:00
-      "NZDCHF" => 1266318000, // starting from 2010.02.16 11:00
-      "NZDJPY" => 1266318000, // starting from 2010.02.16 11:00
-      "XAGUSD" => 1289491200, // starting from 2010.11.11 16:00
-      "XAUUSD" => 1305010800, // starting from 2011.05.10 07:00
-      );
+        // commodities - energy
+        #"E_Light" => 1324375200, // Light starting from 2011.12.20 10:00
+        #"E_Brent" => 1326988800, // Brent starting from 2012.01.19 16:00
+        // commodities - metals
+        #"E_Copper" => 1326988800, // Copper starting from 2012.01.19 16:00
+        #"E_Palladium" => 1326988800, // Palladium starting from 2012.01.19 16:00
+        #"E_Platinum" => 1326988800, // Platinum starting from 2012.01.19 16:00
+        // indices - Europe
+        #"E_DJE50XX" => 1326988800, // Europe 50 starting from 2012.01.19 16:00
+        #"E_CAAC40" => 1326988800, // France 40 starting from 2012.01.19 16:00
+        #"E_Futsee100" => 1326988800, // UK 100 starting from 2012.01.19 16:00
+        #"E_DAAX" => 1326988800, // Germany 30 starting from 2012.01.19 16:00
+        #"E_SWMI" => 1326988800, // Switzerland 20 starting from 2012.01.19 16:00
+        // indices - Americas
+        #"E_NQcomp" => 1326988800, // US Tech Composite starting from 2012.01.19 16:00
+        "E_Nysseecomp" => 1326988800, // US Composite starting from 2012.01.19 16:00
+        #"E_DJInd" => 1326988800, // US 30 starting from 2012.01.19 16:00
+        #"E_NQ100" => 1326988800, // US 100 Tech starting from 2012.01.19 16:00
+        #"E_SandP500" => 1326988800, // US 500 starting from 2012.01.19 16:00
+        #"E_AMMEKS" => 1326988800, // US Average starting from 2012.01.19 16:00
+        // indices - Asia / Pacific
+        #"E_HKong" => 1328475600, // Hong Kong 40 starting from 2012.02.05 21:00
+        "E_SCKorea" => 1326988800, // Korea 200 starting from 2012.01.19 16:00
+        #"E_N225Jap" => 1328486400, // Japan 225 starting from 2012.02.06 00:00
+        // stocks - Australia
+        #"E_ANZASX" => 1348146000, // Australia & Nz Banking starting from 2012.09.20 13:00
+        #"E_BHPASX" => 1348156800, // Bhp Billiton starting from 2012.09.20 16:00
+        #"E_CBAASX" => 1348156800, // Commonwealth Bank Of Australia starting from 2012.09.20 16:00
+        #"E_NABASX" => 1348156800, // National Australia Bank starting from 2012.09.20 16:00
+        #"E_WBCASX" => 1348156800, // Westpac Banking starting from 2012.09.20 16:00
+        // stocks - Hungary
+        #"E_EGISBUD" => 1348146000, // Egis Nyrt starting from 2012.09.20 13:00
+        #"E_MOLBUD" => 1348146000, // Mol Hungarian Oil & Gas Nyrt starting from 2012.09.20 13:00
+        #"E_MTELEKOMBUD" => 1348146000, // Magyar Telekom Telecommunications starting from 2012.09.20 13:00
+        #"E_OTPBUD" => 1348146000, // Ot Bank Nyrt starting from 2012.09.20 13:00
+        #"E_RICHTERBUD" => 1348146000, // Richter Gedeon Nyrt starting from 2012.09.20 13:00
+        // stocks - France
+        #"E_BNPEEB" => 1341594000, // BNP Paribas starting from 2012.07.06 17:00
+        #"E_FPEEB" => 1341594000, // Total starting from 2012.07.06 17:00
+        #"E_FTEEEB" => 1341594000, // France Telecom starting from 2012.07.06 17:00
+        #"E_MCEEB" => 1341594000, // LVMH Moet Hennessy Louis Vuitton starting from 2012.07.06 17:00
+        #"E_SANEEB" => 1341594000, // Sanofi starting from 2012.07.06 17:00
+        // stocks - Netherlands
+        #"E_MTEEB" => 1333101600, // ArcelorMittal starting from 2012.03.30 10:00
+        #"E_PHIA" => 1341406800, // Koninklijke Philips Electronics starting from 2012.07.04 13:00
+        #"E_RDSAEEB" => 1333101600, // Royal Dutch Shell starting from 2012.03.30 10:00
+        #"E_UNAEEB" => 1333101600, // Unilever starting from 2012.03.30 10:00
+        // stocks - Germany
+        #"E_BAY" => 1330948800, // Bayer starting from 2012.03.05 12:00
+        #"E_BMWXET" => 1333101600, // BMW starting from 2012.03.30 10:00
+        #"E_EOANXET" => 1333101600, // E.On starting from 2012.03.30 10:00
+        #"E_SIEXET" => 1341604800, // Siemens starting from 2012.07.06 20:00
+        #"E_VOWXET" => 1341604800, // Volkswagen starting from 2012.07.06 20:00
+        // stocks - Hong Kong
+        #"E_0883HKG" => 1341781200, // CNOOC starting from 2012.07.08 21:00
+        #"E_0939HKG" => 1341784800, // China Construction Bank starting from 2012.07.08 22:00
+        #"E_0941HKG" => 1341781200, // China Mobile starting from 2012.07.08 21:00
+        #"E_1398HKG" => 1341781200, // ICBC starting from 2012.07.08 21:00
+        #"E_3988HKG" => 1341784800, // Bank Of China starting from 2012.07.08 22:00
+        // stocks - UK
+        #"E_BLTLON" => 1333101600, // BHP Billiton starting from 2012.03.30 10:00
+        #"E_BP" => 1326988800, // BP starting from 2012.01.19 16:00
+        #"E_HSBA" => 1326988800, // HSBC Holdings starting from 2012.01.19 16:00
+        #"E_RIOLON" => 1333101600, // Rio Tinto starting from 2012.03.30 10:00
+        #"E_VODLON" => 1333101600, // Vodafone starting from 2012.03.30 10:00
+        // stocks - Spain
+        #"E_BBVAMAC" => 1348149600, // BBVA starting from 2012.09.20 14:00
+        #"E_IBEMAC" => 1348149600, // Iberdrola starting from 2012.09.20 14:00
+        #"E_REPMAC" => 1348149600, // Repsol starting from 2012.09.20 14:00
+        #"E_SANMAC" => 1348149600, // Banco Santander starting from 2012.09.20 14:00
+        #"E_TEFMAC" => 1348149600, // Telefonica starting from 2012.09.20 14:00
+        // stocks - Italy
+        #"E_EN" => 1348146000, // Enel starting from 2012.09.20 13:00
+        #"E_ENIMIL" => 1348146000, // Eni starting from 2012.09.20 13:00
+        #"E_FIA" => 1348146000, // Fiat starting from 2012.09.20 13:00
+        #"E_GMIL" => 1348146000, // Generali starting from 2012.09.20 13:00
+        #"E_ISPMIL" => 1348146000, // Intesa Sanpaolo starting from 2012.09.20 13:00
+        #"E_UCGMIL" => 1348146000, // Unicredit starting from 2012.09.20 13:00
+        // stocks - Denmark
+        #"E_CARL_BOMX" => 1348149600, // Carlsberg starting from 2012.09.20 14:00
+        #"E_DANSKEOMX" => 1348149600, // Danske Bank starting from 2012.09.20 14:00
+        #"E_MAERSK_BOMX" => 1348149600, // Moeller Maersk B starting from 2012.09.20 14:00
+        #"E_NOVO_BOMX" => 1348149600, // Novo Nordisk starting from 2012.09.20 14:00
+        #"E_VWSOMX" => 1348149600, // Vestas Wind starting from 2012.09.20 14:00
+        // stocks - Sweden
+        #"E_SHB_AOMX" => 1348149600, // Svenska Handelsbanken starting from 2012.09.20 14:00
+        #"E_SWED_AOMX" => 1348149600, // Swedbank starting from 2012.09.20 14:00
+        #"E_TLSNOMX" => 1348149600, // Teliasonera starting from 2012.09.20 14:00
+        #"E_VOLV_BOMX" => 1348149600, // Volvo B starting from 2012.09.20 14:00
+        #"E_NDAOMX" => 1348149600, // Nordea Bank starting from 2012.09.20 14:00
+        // stocks - Norway
+        #"E_DNBOSL" => 1348146000, // DNB starting from 2012.09.20 13:00
+        #"E_SDRLOSL" => 1348146000, // Seadrill starting from 2012.09.20 13:00
+        #"E_STLOSL" => 1348146000, // StatoilHydro starting from 2012.09.20 13:00
+        #"E_TELOSL" => 1348146000, // Telenor starting from 2012.09.20 13:00
+        #"E_YAROSL" => 1348146000, // Yara starting from 2012.09.20 13:00
+        // stocks - Singapore
+        #"E_C07SES" => 1348149600, // Jardine Matheson starting from 2012.09.20 14:00
+        #"E_D05SES" => 1348149600, // DBS Group starting from 2012.09.20 14:00
+        #"E_O39SES" => 1348153200, // Oversea-Chinese Banking starting from 2012.09.20 15:00
+        #"E_U11SES" => 1348149600, // United Overseas Bank starting from 2012.09.20 14:00
+        #"E_Z74SES" => 1348149600, // Singapore Telecommunications starting from 2012.09.20 14:00
+        // stocks - Switzerland
+        #"E_CSGN" => 1326988800, // Cs Group starting from 2012.01.19 16:00
+        #"E_NESN" => 1326988800, // Nestle starting from 2012.01.19 16:00
+        #"E_NOVNSWX" => 1333101600, // Novartis starting from 2012.03.30 10:00
+        #"E_UBSN" => 1326988800, // UBS starting from 2012.01.19 16:00
+        // stocks - Austria
+        #"E_ANDRVIE" => 1348149600, // Andritz starting from 2012.09.20 14:00
+        #"E_EBS" => 1348149600, // Erste Group Bank starting from 2012.09.20 14:00
+        #"E_OMVVIE" => 1348149600, // OMV starting from 2012.09.20 14:00
+        #"E_RBIVIE" => 1348149600, // Raiffeisen Bank starting from 2012.09.20 14:00
+        #"E_VOE" => 1348149600, // Voestalpine starting from 2012.09.20 14:00
+        // stocks - Poland
+        #"E_KGHWAR" => 1348146000, // KGHM Polska Miedz starting from 2012.09.20 13:00
+        #"E_PEOWAR" => 1348146000, // Bank Pekao starting from 2012.09.20 13:00
+        #"E_PKNWAR" => 1348146000, // Polski Koncern Naftowy Orlen starting from 2012.09.20 13:00
+        #"E_PKOBL1WAR" => 1348146000, // Powszechna Kasa Oszczednosci Bank Polski starting from 2012.09.20 13:00
+        #"E_PZUWAR" => 1348146000, // Powszechny Zaklad Ubezpieczen starting from 2012.09.20 13:00
+        // stocks - US
+        #"E_AAPL" => 1333101600, // Apple starting from 2012.03.30 10:00
+        #"E_AMZN" => 1324375200, // Amazon starting from 2011.12.20 10:00
+        #"E_AXP" => 1326988800, // American Express starting from 2012.01.19 16:00
+        #"E_BAC" => 1324375200, // Bank Of America starting from 2011.12.20 10:00
+        #"E_CL" => 1333101600, // Colgate Palmolive starting from 2012.03.30 10:00
+        #"E_CSCO" => 1324375200, // Cisco starting from 2011.12.20 10:00
+        #"E_DELL" => 1326988800, // Dell starting from 2012.01.19 16:00
+        #"E_DIS" => 1324375200, // Disney Walt starting from 2011.12.20 10:00
+        #"E_EBAY" => 1326988800, // Ebay starting from 2012.01.19 16:00
+        #"E_GE" => 1324375200, // General Electric starting from 2011.12.20 10:00
+        #"E_GM" => 1324375200, // General Motors starting from 2011.12.20 10:00
+        #"E_GOOGL" => 1324375200, // Google starting from 2011.12.20 10:00
+        #"E_HD" => 1326988800, // Home Depot starting from 2012.01.19 16:00
+        #"E_HPQ" => 1324375200, // Hewlett Packard starting from 2011.12.20 10:00
+        #"E_IBM" => 1324375200, // IBM starting from 2011.12.20 10:00
+        #"E_INTC" => 1324375200, // Intel starting from 2011.12.20 10:00
+        #"E_JNJ" => 1324375200, // Johnson & Johnson starting from 2011.12.20 10:00
+        #"E_JPM" => 1324375200, // JPMorgan Chase starting from 2011.12.20 10:00
+        #"E_KO" => 1324375200, // Coca Cola starting from 2011.12.20 10:00
+        #"E_MCD" => 1324375200, // McDonalds starting from 2011.12.20 10:00
+        #"E_MMM" => 1324375200, // 3M starting from 2011.12.20 10:00
+        #"E_MSFT" => 1324375200, // Microsoft starting from 2011.12.20 10:00
+        #"E_ORCL" => 1324375200, // Oracle starting from 2011.12.20 10:00
+        #"E_PG" => 1324375200, // Procter & Gamble starting from 2011.12.20 10:00
+        #"E_PM" => 1333105200, // Philip Morris starting from 2012.03.30 11:00
+        #"E_SBUX" => 1326988800, // Starbucks starting from 2012.01.19 16:00
+        #"E_T" => 1324378800, // AT&T starting from 2011.12.20 11:00
+        #"E_UPS" => 1333105200, // UPS starting from 2012.03.30 11:00
+        "E_VIXX" => 1326988800, // Cboe Volatility Index starting from 2012.01.19 16:00
+        #"E_WMT" => 1326988800, // Wal-Mart Stores starting from 2012.01.19 16:00
+        #"E_XOM" => 1324375200, // Exxon Mobil starting from 2011.12.20 10:00
+        #"E_YHOO" => 1326988800, // Yahoo starting from 2012.01.19 16:00
+        // Currency pairs.
+        "EURUSD" => 1175270400, // starting from 2007.03.30 16:00
+        "AUDNZD" => 1229961600, // starting from 2008.12.22 16:00
+        "AUDUSD" => 1175270400, // starting from 2007.03.30 16:00
+        "AUDJPY" => 1175270400, // starting from 2007.03.30 16:00
+        "EURCHF" => 1175270400, // starting from 2007.03.30 16:00
+        "EURGBP" => 1175270400, // starting from 2007.03.30 16:00
+        "EURJPY" => 1175270400, // starting from 2007.03.30 16:00
+        "GBPCHF" => 1175270400, // starting from 2007.03.30 16:00
+        "GBPJPY" => 1175270400, // starting from 2007.03.30 16:00
+        "GBPUSD" => 1175270400, // starting from 2007.03.30 16:00
+        "NZDUSD" => 1175270400, // starting from 2007.03.30 16:00
+        "USDCAD" => 1175270400, // starting from 2007.03.30 16:00
+        "USDCHF" => 1175270400, // starting from 2007.03.30 16:00
+        "USDJPY" => 1175270400, // starting from 2007.03.30 16:00
+        "CADJPY" => 1175270400, // starting from 2007.03.30 16:00
+        "EURAUD" => 1175270400, // starting from 2007.03.30 16:00
+        "CHFJPY" => 1175270400, // starting from 2007.03.30 16:00
+        "EURCAD" => 1222167600, // starting from 2008.09.23 11:00
+        "EURNOK" => 1175270400, // starting from 2007.03.30 16:00
+        "EURSEK" => 1175270400, // starting from 2007.03.30 16:00
+        "USDNOK" => 1222639200, // starting from 2008.09.28 22:00
+        "USDSEK" => 1222642800, // starting from 2008.09.28 23:00
+        "USDSGD" => 1222642800, // starting from 2008.09.28 23:00
+        "AUDCAD" => 1266318000, // starting from 2010.02.16 11:00
+        "AUDCHF" => 1266318000, // starting from 2010.02.16 11:00
+        "CADCHF" => 1266318000, // starting from 2010.02.16 11:00
+        "EURNZD" => 1266318000, // starting from 2010.02.16 11:00
+        "GBPAUD" => 1266318000, // starting from 2010.02.16 11:00
+        "GBPCAD" => 1266318000, // starting from 2010.02.16 11:00
+        "GBPNZD" => 1266318000, // starting from 2010.02.16 11:00
+        "NZDCAD" => 1266318000, // starting from 2010.02.16 11:00
+        "NZDCHF" => 1266318000, // starting from 2010.02.16 11:00
+        "NZDJPY" => 1266318000, // starting from 2010.02.16 11:00
+        "XAGUSD" => 1289491200, // starting from 2010.11.11 16:00
+        "XAUUSD" => 1305010800, // starting from 2011.05.10 07:00
+    ];
 }
 
 $missingfilecount = 0; /* number of the file does not exist on the server */
@@ -298,126 +297,118 @@ $lastday = 0;  /* Day one day before the download number */
 
 /* Get and display the current GMT time */
 $curtime = time();
-error("Current GMT time:".gmstrftime("%m/%d/%Y %H:%M:%S",$curtime)."\r\n");
+error("Current GMT time:" . gmstrftime("%m/%d/%Y %H:%M:%S", $curtime) . "\r\n");
 
 /* For each currency circulates download the current version symbols.php contains only one currency pair */
-foreach($symbols as $pair => $firsttick) {
-
-    $firsttick -= $firsttick % 3600;
-    error("Info: Downloading $pair starting with ".gmstrftime("%m/%d/%Y %H:%M:%S",$firsttick)."\r\n");
+foreach ($symbols as $pair => $firsttick) {
+    $firsttick -= $firsttick % 3600; // Round to Hour zero minutes and zero seconds
+    error("Info: Downloading $pair starting with " . gmstrftime("%m/%d/%Y %H:%M:%S", $firsttick) . "\r\n");
 
     /* Download individual files, each containing one hour of tick data */
-    for($i = $firsttick; $i < $curtime-3600; $i += 3600) {
-        $year = gmstrftime('%Y',$i);
-        $month = str_pad(gmstrftime('%m',$i) - 1, 2, '0', STR_PAD_LEFT); // format (month-1), such as the conversion of 00 January, February -> 01
-        $day = gmstrftime('%d',$i);
-        $hour = gmstrftime('%H',$i);
-        $url = "http://www.dukascopy.com/datafeed/$pair/$year/$month/$day/{$hour}h_ticks.bi5";
-
-    // When the file begins to download before the first one day to $ lasttim, $ lastday recorded.  Prompt action is actually downloaded to the day, no other practical effect.
-    if ($day != $lastday)
-    {
-      // If you download the previous day within three seconds BIN data was processed, that the previous day's data has been downloaded.
-      if (time() - $lasttime < 3)
-      {
-        //error("BIN data already downloaded. Skipped.\r\n");
-      }
-
-      $lasttime = time();
-      $lastday = $day;
-      echo("Info: Downloading BIN data of $pair- ".gmstrftime("%m/%d/%Y",$i)."\r\n");
+    $handle = curl_init();
+    if ($handle === false) {
+        error("Failed to prepare HTTP requests");
+        exit(1);
     }
+    for ($i = $firsttick; $i < $curtime - 3600; $i += 3600) {
+        $year = gmstrftime('%Y', $i);
+        $month = str_pad(gmstrftime('%m', $i) - 1, 2, '0', STR_PAD_LEFT); // format (month-1), such as the conversion of 00 January, February -> 01
+        $day = gmstrftime('%d', $i);
+        $hour = gmstrftime('%H', $i);
+        $url = "http://datafeed.dukascopy.com/datafeed/$pair/$year/$month/$day/{$hour}h_ticks.bi5";
 
-    // Calculate the local storage path
+        // When the file begins to download before the first one day to $ lasttim, $ lastday recorded.  Prompt action is actually downloaded to the day, no other practical effect.
+        if ($day != $lastday) {
+            // If you download the previous day within three seconds BIN data was processed, that the previous day's data has been downloaded.
+            if (time() - $lasttime < 3) {
+                //error("BIN data already downloaded. Skipped.\r\n");
+            }
+
+            $lasttime = time();
+            $lastday = $day;
+            echo ("Info: Downloading BIN data of $pair " . gmstrftime("%m/%d/%Y", $i) . "\r\n");
+        }
+
+        // Calculate the local storage path
         $localpath = "$pair/$year/$month/$day/";
         $binlocalfile = $localpath . $hour . "h_ticks.bin";
         $localfile = $localpath . $hour . "h_ticks.bi5";
+
+        // Only when the local file does not exist when it starts to download
+        if (file_exists($localfile) || file_exists($binlocalfile)) {
+            // Local file already exists, skip.  Logic programs to ensure every file download is complete.
+            //error("Info: skipping $url, local file already exists.\r\n");
+            $skippedfilecount++;
+            continue;
+        }
+        // If path does not exists, create it
         if (!file_exists($localpath)) {
             mkdir($localpath, 0777, true);
         }
 
-        // Only when the local file does not exist when it starts to download
-        if (!file_exists($localfile) && !file_exists($binlocalfile)) {
-            $ch = FALSE;
-            $j = 0;
+        // If you can not connect to the server is continuously attempting to download, try up to three times
+        curl_setopt($handle, CURLOPT_URL, $url);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($handle, CURLOPT_HEADER, 0);
 
-            // If you can not connect to the server is continuously attempting to download, try up to three times
-            do {
-                if ($ch !== FALSE) {
-                    curl_close($ch);
-                }
-                $ch = curl_init($url);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
-                curl_setopt($ch, CURLOPT_HEADER, 0);
-                $result = curl_exec($ch);
-                $j++;
-            } while ($j <= 3 && curl_errno($ch));
+        $retryCount = 0;
+        do {
+            $result = curl_exec($handle);
+            $retryCount++;
+        } while ($retryCount <= 3 && curl_errno($handle));
 
-            // Try three times still can not connect the server to exit the program.
-            if (curl_errno($ch)) {
-                error("FATAL: Couldn't download $url.\r\nError was: ".curl_error($ch)."\r\n");
-                $quitstring = "Unable to connect to server";
-                exit(1);
-            }
-            // The server returns the data, but does not necessarily represent the download success
-            else {
-              // The server returns a 404 number to indicate you want to download the file does not exist
-                if (curl_getinfo($ch, CURLINFO_HTTP_CODE) == 404) {
-                    $weekday = gmstrftime('%a',$i);
-                    if (strcasecmp($weekday,'sun') == 0 || strcasecmp($weekday,'sat') == 0) {
-                        // Missing file on weekends data
-                        error("Info: missing weekend file $url\r\n");
-                    }
-                    else {
-                        error("WARNING: missing file $url ($i - ".gmstrftime("%m/%d/%Y %H:%M GMT",$i).")\r\n");
-                    }
-
-                    $missingfilecount++;
-                }
-                // The server returns a 200 number, indicating that the file is complete download.
-                else if (curl_getinfo($ch, CURLINFO_HTTP_CODE) == 200) {
-                    $outfd = fopen($localfile, 'wb');
-                    if ($outfd === FALSE) {
-                        error("FATAL: Couldn't open $localfile ($url - $i)\r\n");
-                        $quitstring = "Error: Can not create a local file.";
-                        exit(1);
-                    }
-                    fwrite($outfd, $result);
-                    fclose($outfd);
-                    //error("Info: successfully downloaded $url\r\n");
-          $successfilecount++;
-                }
-                // Returns the number of unknown, indicates that the file download an unknown error
-                else {
-                    error("WARNING: did not download $url ($i - ".gmstrftime("%m/%d/%Y %H:%M GMT",$i).") - error code was ".curl_getinfo($ch, CURLINFO_HTTP_CODE)."\r\nContent was: $result\r\n");
-
-          $failedfilecount++;
-                }
-            }
-            curl_close($ch);
+        if (curl_errno($handle)) {
+            error("FATAL: Couldn't download $url.\r\nError was: " . curl_error($handle) . "\r\n");
+            $quitstring = "Unable to connect to server";
+            exit(1);
         }
-        else {
-          // Local file already exists, skip.  Logic programs to ensure every file download is complete.
-            //error("Info: skipping $url, local file already exists.\r\n");
-      $skippedfilecount++;
+
+        // The server returns the data, but does not necessarily represent the download success
+        switch (curl_getinfo($handle, CURLINFO_HTTP_CODE)) {
+            case 404:
+                // The server returns a 404 number to indicate you want to download the file does not exist
+                $weekday = gmstrftime('%a', $i);
+                if (strcasecmp($weekday, 'sun') == 0 || strcasecmp($weekday, 'sat') == 0) {
+                    // Missing file on weekends data
+                    error("Info: missing weekend file $url\r\n");
+                } else {
+                    error("WARNING: missing file $url ($i - " . gmstrftime("%m/%d/%Y %H:%M GMT", $i) . ")\r\n");
+                }
+
+                $missingfilecount++;
+                break;
+
+            case 200:
+                // The server returns a 200 number, indicating that the file is complete download.
+                file_put_contents($localfile, $result);
+                //error("Info: successfully downloaded $url\r\n");
+                $successfilecount++;
+                break;
+
+            default:
+                // Returns the number of unknown, indicates that the file download an unknown error
+                error("WARNING: did not download $url ($i - " . gmstrftime("%m/%d/%Y %H:%M GMT", $i) . ") - error code was " . curl_getinfo($handle, CURLINFO_HTTP_CODE) . "\r\nContent was: $result\r\n");
+                $failedfilecount++;
         }
         // Here the end of a file to download, about to enter the next file
 
     }
+    curl_close($handle);
 
-  $totalseconds = time() - $curtime;
+    $totalseconds = time() - $curtime;
 
-  error("has been completed" . $pair . ". The download task total use ". outtm($totalseconds) . "state exit is:" . $quitstring . "\r\n");
-  error("There are" . $successfilecount . "files in this task has been downloaded\r\nwhere" . $skippedfilecount . " skipped as the files already exists\r\n");
-  error("there are " . $missingfilecount . "missing files on the server, so could not be downloaded\r\nThere are".$failedfilecount."files where unknown error occured, so a file was not saved during the download process.\r\n");
+    error("has been completed" . $pair . ". The download task total use " . outtm($totalseconds) . " state exit is:" . $quitstring . PHP_EOL);
+    error("There are" . $successfilecount . "files in this task has been downloaded" . PHP_EOL . "where " . $skippedfilecount . " skipped as the files already exists" . PHP_EOL);
+    error("There are " . $missingfilecount . "missing files on the server, so could not be downloaded" . PHP_EOL . "There are " . $failedfilecount . "files where unknown error occured, so a file was not saved during the download process." . PHP_EOL);
 
 
-  // Here ends a currency download all the files downloaded, about to enter the next currency pair.  We only deal with the current version of one pair of currency pairs, so the use of break out of the loop, the actual end of the program.
-  break;
+    // Here ends a currency download all the files downloaded, about to enter the next currency pair.
+    // We only deal with the current version of one pair of currency pairs, so the use of break out of the loop, the actual end of the program.
+    break;
 }
 
-function error($error) {
+function error($error)
+{
     echo $error;
     $fd = fopen('error.log', 'a+');
     fwrite($fd, $error);
@@ -427,12 +418,13 @@ function error($error) {
 /*
  * According to the number of seconds to return all day: hours, minutes, seconds format.
  */
-function outtm($sec){
-  $d = floor($sec / 86400);
-  $tmp = $sec % 86400;
-  $h = floor($tmp / 3600);
-  $tmp %= 3600;
-  $m = floor($tmp /60);
-  $s = $tmp % 60;
-  return "[" . $d . "days" . $h . "h" . $m . "points" . $s . "s]";
+function outtm($sec)
+{
+    $d = floor($sec / 86400);
+    $tmp = $sec % 86400;
+    $h = floor($tmp / 3600);
+    $tmp %= 3600;
+    $m = floor($tmp / 60);
+    $s = $tmp % 60;
+    return "[" . $d . "days" . $h . "h" . $m . "points" . $s . "s]";
 }
