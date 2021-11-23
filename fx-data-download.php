@@ -41,7 +41,7 @@
 
 $symbols = [
     //"EURUSD" => 1175270400, // starting from 2007.03.30 16:00
-    "XAUUSD" => Datetime::createFromFormat('Y-m-d H:i:s', '2021-11-01 00:00:00', new DateTimeZone('UTC'))->format('U'), // starting from 2011.05.10 07:00
+    "XAUUSD" => Datetime::createFromFormat('Y-m-d H:i:s', '2021-01-01 00:00:00', new DateTimeZone('UTC'))->format('U'), // starting from 2011.05.10 07:00
 ];
 if (file_exists('symbols.php')) {
     require 'symbols.php';

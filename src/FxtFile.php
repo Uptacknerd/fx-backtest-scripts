@@ -16,7 +16,6 @@ use Generator;
  * Numbers are little endian
  * @link https://www.mql5.com/fr/code/viewcode/8648/46621/FXTHeader.mqh
  */
-
 class FxtFile extends AbstractFile
 {
     const LITTLE_ENDIAN_U_INT32 = 'L';
@@ -60,6 +59,18 @@ class FxtFile extends AbstractFile
     const COMMISSION_DEAL = 1;
 
     const RECORD_SIZE = 56;
+
+
+    /** Tick record related constants
+     * @link https://www.mql5.com/en/forum/75268
+     */
+    // Not sure it applies to MT4.
+    const TICK_FLAG_BID     = 2;
+    const TICK_FLAG_ASK     = 4;
+    const TICK_FLAG_LAST    = 8;
+    const TICK_FLAG_VOLUME  = 16;
+    const TICK_FLAG_BUY     = 32;
+    const TICK_FLAG_SELL    = 32;
 
     /**
      * Is the header written to the file ?
@@ -259,7 +270,7 @@ class FxtFile extends AbstractFile
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->endDate->getTimestamp());
 
         // Offset 228
-        $header .= pack(self::LITTLE_ENDIAN_U_INT32, 0); // 4 bytes Padding
+        $header .= pack(self::LITTLE_ENDIAN_U_INT32, 0); // 4 bytes Padding. This potentially can be totalTicks
 
         // Offset 232
         $header .= pack(self::LITTLE_ENDIAN_DOUBLE_FLOAT, $this->quality);
@@ -665,7 +676,47 @@ class FxtFile extends AbstractFile
 
     public function readBar(): ?Bar
     {
-        throw new RuntimeException("Not implemented");
+        $position = ftell($this->handle);
+        $record = fread($this->handle, self::RECORD_SIZE);
+        if (strlen($record) != self::RECORD_SIZE) {
+            $error = sprintf(
+                "Failed to read a record in %s at %i bytes. Expected %i bytes, got %i bytes.",
+                $this->filename,
+                $position,
+                self::RECORD_SIZE,
+                strlen($record)
+            );
+            throw new RuntimeException($error);
+        }
+
+        // Decode the bar
+
+        $format =
+        // format                               // fieldname (as key in output array)
+        self::LITTLE_ENDIAN_U_INT32           . 'openDate/' .
+        self::LITTLE_ENDIAN_U_INT32           . 'padding/' .
+        self::LITTLE_ENDIAN_DOUBLE_FLOAT      . 'open/' .
+        self::LITTLE_ENDIAN_DOUBLE_FLOAT      . 'high/' .
+        self::LITTLE_ENDIAN_DOUBLE_FLOAT      . 'low/' .
+        self::LITTLE_ENDIAN_DOUBLE_FLOAT      . 'close/' .
+        self::LITTLE_ENDIAN_U_INT64           . 'volume/' .
+        self::LITTLE_ENDIAN_U_INT32           . 'tickDate/' .
+        self::LITTLE_ENDIAN_U_INT32           . 'flag';
+
+        $fields = unpack($format, $record);
+
+        // Compute timeframe
+        $timeframe = $this->getTimeframe();
+        $bar = new Bar($timeframe);
+
+        $bar->setOpenDate(Datetime::createFromFormat('U', $fields['openDate'], new DateTimeZone('UTC')))
+            ->setOpen($fields['open'])
+            ->setHigh($fields['high'])
+            ->setLow($fields['low'])
+            ->setVolume($fields['volume'])
+            ->setTickDate(Datetime::createFromFormat('U', $fields['tickDate'], new DateTimeZone('UTC')));
+
+        return $bar;
     }
 
     public function addBar(Bar $bar)
@@ -712,6 +763,7 @@ class FxtFile extends AbstractFile
         $this->setStartDate($this->firstBar->getOpenDate());
 
         $this->seekLast();
+        $this->lastBar = $this->readBar();
         $this->setEndDate($this->lastBar->getCloseDate());
         fseek($this->handle, 0);
         fwrite($this->handle, $this->getHeader());

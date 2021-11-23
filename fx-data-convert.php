@@ -171,7 +171,7 @@ function loopTicktoTick(FileInterface $producer, FileInterface $consumer, Dateti
             } else {
                 // Aggregate tick to the bar
                 $bar->setHigh(max($bar->getHigh(), $tick->getBid()));
-                $bar->setLow(max($bar->getLow(), $tick->getBid()));
+                $bar->setLow(min($bar->getLow(), $tick->getBid()));
                 $bar->setClose($tick->getBid());
                 $bar->setVolume($bar->getVolume() + $tick->getBidVolume() + $tick->getAskVolume());
                 $bar->setTickDate($tick->getDate());
