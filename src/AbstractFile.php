@@ -20,6 +20,8 @@ abstract class AbstractFile implements FileInterface
     const CONSUME_BOTH = 2;
 
     protected string $filename;
+    protected bool $useTemp;
+
     protected $handle;
     protected int $timeframe; // in seconds
     protected int $barsCount = 0;
@@ -38,6 +40,58 @@ abstract class AbstractFile implements FileInterface
 
     public function __construct(string $filename, bool $detectTimeframe = false) {
         $this->filename = $filename;
+    }
+
+    protected function getTempFilename():string {
+        if ($this->filename == '' || !isset($this->filename)) {
+            return '';
+        }
+
+        return $this->filename . '.temp';
+    }
+
+    public function getFilename() {
+        if ($this->useTemp) {
+            return $this->getTempFilename();
+        }
+
+        return $this->filename;
+    }
+
+    public function open(string $mode = 'r') {
+        switch ($mode) {
+            case 'r':
+            case 'w':
+            case 'w+':
+                break;
+
+            default:
+                throw new RuntimeException("Unsupported file mode $mode");
+        }
+
+        $filename = $this->filename;
+        if (in_array($mode, ['w', 'w+'])) {
+            if (file_exists($this->filename) && !is_writable($this->filename)) {
+                throw new runtimeException("Output file already exists and is read only");
+            }
+            $this->useTemp = true;
+            $filename = $this->getTempFilename();
+        }
+        $this->handle = fopen($filename, $mode);
+        if ($this->handle === false) {
+            throw new RuntimeException("Failed to open " . $filename);
+        }
+
+    }
+
+    public function close() {
+        fclose($this->handle);
+        if ($this->useTemp) {
+            if (!rename($this->getFilename(), $this->filename)) {
+                throw new RuntimeException("Failed to rename temporary output file to its final name");
+            }
+            $this->useTemp = false;
+        }
     }
 
     public function setTimeframe(int $timeframe)

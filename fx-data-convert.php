@@ -16,24 +16,26 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 (function () {
     global $CONFIG;
+//      fx-data-convert.php --input in_file --timeframe=timeframe --output-type=model [--output=out_file] [--spread=spread] [--begin=date] [--end=date]
 
     $doc = <<<DOC
     Naval Fate.
 
     Usage:
-      fx-data-convert.php --input in_file --timeframe=timeframe [--begin=date] [--end=date] [--output=out_file] [--spread=spread] --symbol=symbol --model=model
+      fx-data-convert.php --input in_file --timeframe=timeframe --symbol=symbol --output-type=model [--output=out_file] [--spread=spread] [--begin=date] [--end=date]
       fx-data-convert.php --version
 
     Options:
       -h --help                Show this screen.
       --version                Show version.
+      -c --config config       Name of a server configuration (not implemented yet)
       -i --input=in_file       file to read data from
       -b --begin=date          Date where the convertion should begin
       -e --end=date            Date where the conversion should finish
       -o --output=file         Filename where data are written
       --symbol=symbol          Symbol
       -t --timeframe=timeframe Timeframe
-      -m --model=model         Tick model for the FXT output
+      -ot --output-type=type   tick | bar : output ticks or bars
       -s --spread=spread       Spread
     DOC;
 
@@ -42,8 +44,8 @@ require_once __DIR__ . '/vendor/autoload.php';
     $args = Docopt::handle($doc, array('version'=>'FX data converter v1.0'));
 
     $args['--output'] = $args['--output'] ?? 'null';
-    if (!in_array($args['--model'], ['tick', 'bar'])) {
-        echo "Error: model must be tick or bar";
+    if (!in_array($args['--output-type'], ['tick', 'bar'])) {
+        echo "Error: output type must be tick or bar";
         die();
     }
 
@@ -92,11 +94,12 @@ require_once __DIR__ . '/vendor/autoload.php';
     $consumer->setStartDate($beginDate);
     $consumer->setEndDate($endDate);
     $consumer->setSymbol($args['--symbol']);
+    // $consumer->setPoint(detectPoint($consumer->getSymbol()));
     $consumer->setTimeframe(Timeframe::convertTimeframe($args['--timeframe']));
     $consumer->open('w+');
 
-    $productionType = $producer->negociateOutputType($consumer, $args['--model'] == 'tick');
-    $consommationType = $consumer->negociateInputType($producer, $args['--model'] == 'tick');
+    $productionType = $producer->negociateOutputType($consumer, $args['--output-type'] == 'tick');
+    $consommationType = $consumer->negociateInputType($producer, $args['--output-type'] == 'tick');
 
     if ($productionType == AbstractFile::PRODUCE_TICK) {
         if ($consommationType == AbstractFile::CONSUME_TICK) {
@@ -119,7 +122,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 
     // Finalize the output file
     $consumer->finish();
-
+    $consumer->close();
 })();
 
 function loopTicktoTick(FileInterface $producer, FileInterface $consumer, Datetime $beginDate, Datetime $endDate, $timeframe) {
@@ -187,7 +190,7 @@ function loopTicktoTick(FileInterface $producer, FileInterface $consumer, Dateti
                 $percent = ($currentDate->getTimestamp() - $beginDate->getTimestamp()) / ($endDate->getTimestamp() - $beginDate->getTimestamp()) * 100;
                 $percent = number_format($percent, 3);
                 $progressDate = $currentDate;
-                $progressSummary = sprintf("processing date: %s progress: %s/100 mem: %s",
+                $progressSummary = sprintf("processing date: %s progress: %s/%% mem: %s",
                     $currentDate->format("Y-m-d H:i:s"),
                     $percent,
                     memory_get_usage(),

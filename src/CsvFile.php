@@ -22,6 +22,10 @@ class CsvFile extends AbstractFile
         fclose($this->handle);
     }
 
+    public function isInjectable(): ?string {
+        return null;
+    }
+
     public function open(string $mode = 'r') {
         $this->handle = fopen($this->filename, $mode);
         $this->currentLine = 0;
@@ -207,4 +211,21 @@ class CsvFile extends AbstractFile
             ->setVolume($fields[3] + $fields[4]);
         return $bar;
     }
+
+    public function setServerName(string $serveRName) {}
+
+    public function getMinLotSize() {}
+
+    public function setMinLotSize($minLotSize) {}
+
+    public function getMaxLotSize() {}
+
+    public function setMaxLotSize($maxLotSize) {}
+
+    public function getLotStep() {}
+
+    public function setLotStep($lotStep) {}
+
+    public function setStopLevel($stopLevel) {}
+
 }

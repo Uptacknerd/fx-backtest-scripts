@@ -136,81 +136,88 @@ class FxtFile extends AbstractFile
         $this->endDate = new Datetime('now', new DateTimeZone('GMT'));
     }
 
-    public function setOptions($args)
-    {
-        if (isset($args['--model'])) {
-            switch (strtolower($args['--model'])) {
-                case 'tick':
-                    $this->setTickModel(self::TICK_MODEL_TICK);
-                    break;
-
-                case 'point':
-                    $this->setTickModel(self::TICK_MODEL_CONTROL_POINT);
-                    break;
-
-                case 'open':
-                    $this->setTickModel(self::TICK_MODEL_BAR_OPEN);
-                    break;
-            }
-        }
-
-        if (!isset($args['--symbol'])) {
-            throw new RuntimeException("Symbol specification is mandatory");
-        }
-        $this->setSymbol($args['--symbol']);
-
-        if (!isset($args['--timeframe'])) {
-            throw new RuntimeException("Timeframe specification is mandatory");
-        }
-        $timeframe = strtolower($args['--timeframe']);
-        $timeframe = Timeframe::convertTimeframe($timeframe);
-        $this->setTimeframe(Timeframe::convertTimeframe($args['--timeframe']));
-
-        if (!isset($args['--model'])) {
-            throw new RuntimeException("Model specification is mandatory");
-        }
-        switch ($args['--model']) {
-            case 'tick':
-                $this->setTickModel(self::TICK_MODEL_TICK);
-                break;
-
-            case 'control-point':
-                $this->setTickModel(self::TICK_MODEL_CONTROL_POINT);
-                break;
-
-            case 'open-point':
-                $this->setTickModel(self::TICK_MODEL_BAR_OPEN);
-                break;
-
-            default:
-                throw new RuntimeException("Invalid model specification. Use tick, control-point or open-point");;
-        }
-
-        if (isset($args['--spread'])) {
-            $this->setSpread($args['--spread']);
-        }
+    /*
+    public function isInjectable(): ?string {
+        return 'MT4';
     }
+
+    public function suggestFilename(): string {
+        $timeframe = $this->getTimeframe();
+
+        $symbol = $this->getSymbol();
+
+        // switch ($this->getTickModel()) {
+        //     case self::TICK_MODEL_TICK:
+        //         break;
+        //     case self::TICK_MODEL_CONTROL_POINT:
+        //         break;
+        //     case self::TICK_MODEL_BAR_OPEN:
+        //         break;
+        // }
+        $model = $this->getTickModel();
+
+        return sprintf("%s%s_%s.fxt", $symbol, $timeframe / 60, $model);
+    }
+    */
+
+    // public function setOptions($args)
+    // {
+    //     if (isset($args['--model'])) {
+    //         switch (strtolower($args['--model'])) {
+    //             case 'tick':
+    //                 $this->setTickModel(self::TICK_MODEL_TICK);
+    //                 break;
+
+    //             case 'point':
+    //                 $this->setTickModel(self::TICK_MODEL_CONTROL_POINT);
+    //                 break;
+
+    //             case 'open':
+    //                 $this->setTickModel(self::TICK_MODEL_BAR_OPEN);
+    //                 break;
+    //         }
+    //     }
+
+    //     if (!isset($args['--symbol'])) {
+    //         throw new RuntimeException("Symbol specification is mandatory");
+    //     }
+    //     $this->setSymbol($args['--symbol']);
+
+    //     if (!isset($args['--timeframe'])) {
+    //         throw new RuntimeException("Timeframe specification is mandatory");
+    //     }
+    //     $timeframe = strtolower($args['--timeframe']);
+    //     $timeframe = Timeframe::convertTimeframe($timeframe);
+    //     $this->setTimeframe(Timeframe::convertTimeframe($args['--timeframe']));
+
+    //     if (!isset($args['--model'])) {
+    //         throw new RuntimeException("Model specification is mandatory");
+    //     }
+    //     switch ($args['--model']) {
+    //         case 'tick':
+    //             $this->setTickModel(self::TICK_MODEL_TICK);
+    //             break;
+
+    //         case 'control-point':
+    //             $this->setTickModel(self::TICK_MODEL_CONTROL_POINT);
+    //             break;
+
+    //         case 'open-point':
+    //             $this->setTickModel(self::TICK_MODEL_BAR_OPEN);
+    //             break;
+
+    //         default:
+    //             throw new RuntimeException("Invalid model specification. Use tick, control-point or open-point");;
+    //     }
+
+    //     if (isset($args['--spread'])) {
+    //         $this->setSpread($args['--spread']);
+    //     }
+    // }
 
     public function open(string $mode = 'r')
     {
-        switch ($mode) {
-            case 'r':
-                break;
-
-            case 'w':
-                break;
-
-            case 'w+':
-                break;
-
-            default:
-                throw new RuntimeException("Unsupported file mode $mode");
-        }
-
-        $this->handle = fopen($this->filename, $mode);
-        if ($this->handle === false) {
-            throw new RuntimeException("Failed to open " . $this->filename);
-        }
+        parent::open($mode);
         switch ($mode) {
             case 'w':
                 if (fwrite($this->handle, $this->getHeader()) < 728) {
@@ -220,19 +227,28 @@ class FxtFile extends AbstractFile
 
             case 'r':
             case 'w+':
+                $headerSize = strlen($this->getHeader());
                 fseek($this->handle, 0);
-                $header = fread($this->handle, 728);
-                if (strlen($header) > 0 && strlen($header) < 728) {
-                    throw new RuntimeException("Failed to read header");
-                };
-                if (strlen($header) == 728) {
-                    $this->readHeader($header);
+                if  (filesize($this->getFilename()) >= $headerSize) {
+                    $header = fread($this->handle, $headerSize);
+                    if (strlen($header) > 0 && strlen($header) < $headerSize) {
+                        throw new RuntimeException("Failed to read header");
+                    };
+                    if (strlen($header) == $headerSize) {
+                        $this->readHeader($header);
+                    }
+                } else {
+                    if (fwrite($this->handle, $this->getHeader()) < $headerSize) {
+                        throw new RuntimeException("Failed to write header");
+                    }
                 }
                 break;
-
-            default:
-                throw new RuntimeException("Unsupported file mode $mode");
         }
+    }
+
+    public function close() {
+        parent::close();
+        chmod($this->getFilename(), 0444);
     }
 
     /**
@@ -241,138 +257,57 @@ class FxtFile extends AbstractFile
     public function getHeader(): string
     {
         $header = '';
-
-        // Offset 0
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->version);
-
-        // Offset 4
         $header .= mb_convert_encoding(str_pad(substr($this->copyright, 0, 64), 64, "\x00"), 'ASCII');
-
-        // Offset 68
         $header .= mb_convert_encoding(str_pad(substr($this->serverName, 0, 128), 128, "\x00"), 'ASCII');
-
-        // Offset 196
         $header .= mb_convert_encoding(str_pad(substr(strtoupper($this->symbol), 0, 12), 12, "\x00"), 'ASCII');
-
-        // Offset 208
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, (int) ($this->timeframe / 60)); // Timeframe in minute
-
-        // Offset 212
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->tickModel);
-
-        // Offset 216
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->barsCount);
-
-        // Offset 220
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->startDate->getTimestamp());
-
-        // Offset 224
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->endDate->getTimestamp());
-
-        // Offset 228
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, 0); // 4 bytes Padding. This potentially can be totalTicks
-
-        // Offset 232
         $header .= pack(self::LITTLE_ENDIAN_DOUBLE_FLOAT, $this->quality);
 
         //  General parameters
-        // Offset 240
         $header .= mb_convert_encoding(str_pad(substr($this->baseCurrency, 0, 12), 12, "\x00"), 'ASCII');
-
-        // Offset 256
-        $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->spread);
-
-        // Offset 260
+        $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->spread); // Not propagated from cmd line yet
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->digits);
-
-        // Offset 264
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, 0); // 4 bytes Padding
 
-        // Offset 268
         $header .= pack(self::LITTLE_ENDIAN_DOUBLE_FLOAT, $this->pointSize);
-
-        // Offset 276
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->minLotSize);
-
-        // Offset 276
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->maxLotSize);
-
-        // Offset 280
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->lotStep);
-
-        // Offset 284
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->stopLevel);
-
-        // Offset 288
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->orderExpiration);
-
-        // Offset 276
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, 0); // 4 bytes Padding
 
         // Profit Calculation parameters
-        // Offset 280
         $header .= pack(self::LITTLE_ENDIAN_DOUBLE_FLOAT, $this->contractSize);
-
-        // Offset 288
         $header .= pack(self::LITTLE_ENDIAN_DOUBLE_FLOAT, $this->tickValue);
-
-        // Offset 296
         $header .= pack(self::LITTLE_ENDIAN_DOUBLE_FLOAT, $this->tickSize);
-
-        // Offset 304
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->profitCalculation);
 
         // Swap calculation
-        // Offset 308
         $header .= pack(self::LITTLE_ENDIAN_INT32, $this->enableSwap ? 1 : 0);
-
-        // Offset 312
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->swapCalculation);
-
-        // Offset 316
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, 0); // 4 bytes Padding
-
-        // Offset 320
         $header .= pack(self::LITTLE_ENDIAN_DOUBLE_FLOAT, $this->swapBuy);
-
-        // Offset 328
         $header .= pack(self::LITTLE_ENDIAN_DOUBLE_FLOAT, $this->swapSell);
-
-        // Offset 336
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->threeDaysSwap);
 
         // Margin calculation
-        // Offset 340
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->leverage);
-
-        // Offset 344
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->freeMarginCalculation);
-
-        // Offset 348
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->marginCalculation);
-
-        // Offset 352
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->marginStopoutLevel);
-
-        // Offset 356
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, $this->marginCheckMode);
-
-        // Offset 360
         $header .= pack(self::LITTLE_ENDIAN_DOUBLE_FLOAT, $this->marginRequirement);
-
-        // Offset 368
         $header .= pack(self::LITTLE_ENDIAN_DOUBLE_FLOAT, $this->marginMaintenanceRequirement);
-
-        // Offset 376
         $header .= pack(self::LITTLE_ENDIAN_DOUBLE_FLOAT, $this->marginHedgeRequirement);
-
-        // Offset 384
         $header .= pack(self::LITTLE_ENDIAN_DOUBLE_FLOAT, $this->marginDivider);
-
-        // Offset 392
         $header .= mb_convert_encoding(str_pad(substr($this->marginCurrency, 0, 12), 12, "\x00"), 'ASCII');
-
-        // Offset 404
         $header .= pack(self::LITTLE_ENDIAN_U_INT32, 0); // 4 bytes Padding
 
         // Commission calculation
@@ -416,7 +351,7 @@ class FxtFile extends AbstractFile
 
         // Version
         if (strlen($value) != $headerSize) {
-            throw new RuntimeException("Unexpected end of file $this->filename");
+            throw new RuntimeException("Unexpected end of file " . $this->getFilename());
         }
         $offset = 0;
 
@@ -599,7 +534,7 @@ class FxtFile extends AbstractFile
 
         // Initialize dichotomic interval
         $minPosition = strlen($this->getHeader());
-        $maxPosition = filesize($this->filename) - self::RECORD_SIZE; // Last record (a record is 56 bytes length)
+        $maxPosition = filesize($this->getFilename()) - self::RECORD_SIZE; // Last record (a record is 56 bytes length)
         if (($maxPosition - $minPosition) % self::RECORD_SIZE != 0) {
             throw new RuntimeException("Incorrect filesize: header and record size don't match");
         }
@@ -648,7 +583,7 @@ class FxtFile extends AbstractFile
     public function seekLast()
     {
         $minPosition = strlen($this->getHeader());
-        $maxPosition = filesize($this->filename) - 56; // Last record (a record is 56 bytes length)
+        $maxPosition = filesize($this->getFilename()) - 56; // Last record (a record is 56 bytes length)
         if (($maxPosition - $minPosition) % self::RECORD_SIZE != 0) {
             throw new RuntimeException("Incorrect filesize: header and record size don't match");
         }
@@ -681,7 +616,7 @@ class FxtFile extends AbstractFile
         if (strlen($record) != self::RECORD_SIZE) {
             $error = sprintf(
                 "Failed to read a record in %s at %i bytes. Expected %i bytes, got %i bytes.",
-                $this->filename,
+                $this->getFilename(),
                 $position,
                 self::RECORD_SIZE,
                 strlen($record)
@@ -750,7 +685,7 @@ class FxtFile extends AbstractFile
                 $bar->getClose(),
                 max($bar->getVolume(), 1),
                 $bar->getTickDate()->getTimestamp(),
-                0
+                4 // A flag telling how to wake the EA. Unclear at the moment. Values 0 and 4 observed in original tool and other tools
             )
         );
     }
@@ -765,10 +700,13 @@ class FxtFile extends AbstractFile
         $this->seekLast();
         $this->lastBar = $this->readBar();
         $this->setEndDate($this->lastBar->getCloseDate());
+
+        $this->setBarsCount($this->barsCount);
+
         fseek($this->handle, 0);
         fwrite($this->handle, $this->getHeader());
 
-        $finalSize = filesize($this->filename);
+        $finalSize = filesize($this->getFilename());
         if (($finalSize - strlen($this->getHeader())) % self::RECORD_SIZE != 0) {
             throw new RuntimeException("Output file size does not match header + an integer number of records ");
         }
@@ -809,8 +747,20 @@ class FxtFile extends AbstractFile
      */
     public function setSymbol($symbol)
     {
-        $this->symbol = $symbol;
+        global $CONFIG;
 
+        $this->symbol = $symbol;
+        $this->setServerName($CONFIG->getServer('vfx'));
+        $this->setDigits($CONFIG->getDigits('vfx', $symbol));
+        $this->setPointSize($CONFIG->getPointSize('vfx', $symbol));
+        $this->setMinLotSize($CONFIG->getMinLot('vfx', $symbol));
+        $this->setMaxLotSize($CONFIG->getMaxLot('vfx', $symbol));
+        $this->setLotStep($CONFIG->getLotStep('vfx', $symbol));
+        $this->setStopLevel($CONFIG->getStopLevel('vfx', $symbol));
+        $this->setBaseCurrency($CONFIG->getBaseCurrency('vfx', $symbol));
+        $spread = $args['--spread'] ?? $CONFIG->getSpread('vfx', $symbol);
+        $this->setSpread($spread);
+        $this->setContractSize($CONFIG->getContractSize('vfx', $symbol));
         return $this;
     }
 
@@ -871,7 +821,7 @@ class FxtFile extends AbstractFile
      */
     public function setMinLotSize($minLotSize)
     {
-        $this->minLotSize = $minLotSize;
+        $this->minLotSize = $minLotSize * 100;
 
         return $this;
     }
@@ -891,7 +841,7 @@ class FxtFile extends AbstractFile
      */
     public function setMaxLotSize($maxLotSize)
     {
-        $this->maxLotSize = $maxLotSize;
+        $this->maxLotSize = $maxLotSize * 100;
 
         return $this;
     }
@@ -911,7 +861,7 @@ class FxtFile extends AbstractFile
      */
     public function setLotStep($lotStep)
     {
-        $this->lotStep = $lotStep;
+        $this->lotStep = $lotStep * 100;
 
         return $this;
     }
@@ -1674,5 +1624,22 @@ class FxtFile extends AbstractFile
         $this->ModelingBarIndexH4 = $ModelingBarIndexH4;
 
         return $this;
+    }
+
+    protected function detectPoint(): int {
+        $pair = strtolower($this->getSymbol());
+
+        $point = 0.00001;
+        if (
+            stripos($pair, 'jpy') !== false ||
+            strcasecmp($pair, 'usdrub') == 0 ||
+            strcasecmp($pair, 'xagusd') == 0 ||
+            strcasecmp($pair, 'xauusd') == 0
+        ) {
+            $point = 0.001;
+        } else if (stripos($pair, 'rub') !== false) {
+            $point = 0.001;
+        }
+        return $point;
     }
 }

@@ -9,51 +9,141 @@ return [
     'Metatrader-path' => '',
     'dukascopy' => [
         'symbols' => [
-            "ADSDEEUR"      => 1426201200, # starting from 2015.03.13 00:00
-            "ALVDEEUR"      => 1429394400, # starting from 2015.04.19 00:00
-            "AUSIDXAUD"     => 1402524000, # starting from 2014.06.12 00:00
-            "BASDEEUR"      => 1429678800, # starting from 2015.04.22 07:00
-            "BAYNDEEUR"     => 1426806000, # starting from 2015.03.20 00:00
-            "BEIDEEUR"      => 1428444000, # starting from 2015.04.08 00:00
-            "BMWDEEUR"      => 1427151600, # starting from 2015.03.24 00:00
-            "BRENTCMDUSD"   => 1291244400, # starting from 2010.12.02 00:00
-            "CHEIDXCHF"     => 1356994800, # starting from 2013.01.01 00:00
-            "CONDEEUR"      => 1428444000, # starting from 2015.04.08 00:00
-            "DAIDEEUR"      => 1427410800, # starting from 2015.03.27 00:00
-            "DB1DEEUR"      => 1428962400, # starting from 2015.04.14 00:00
-            "DBKDEEUR"      => 1427238000, # starting from 2015.03.25 00:00
-            "DEUIDXEUR"     => 1356994800, # starting from 2013.01.01 00:00
-            "DTEDEEUR"      => 1427752800, # starting from 2015.03.31 00:00
-            "EOANDEEUR"     => 1429480800, # starting from 2015.04.20 00:00
-            "ESPIDXEUR"     => 1427238000, # starting from 2015.03.25 00:00
-            "EUSIDXEUR"     => 1433196000, # starting from 2015.06.02 00:00
-            "FMEDEEUR"      => 1427839200, # starting from 2015.04.01 00:00
-            "FRAIDXEUR"     => 1356994800, # starting from 2013.01.01 00:00
-            "FREDEEUR"      => 1428616800, # starting from 2015.04.10 00:00
-            "HEIDEEUR"      => 1427925600, # starting from 2015.04.02 00:00
-            "HEN3DEEUR"     => 1429567200, # starting from 2015.04.21 00:00
-            "HKGIDXHKD"     => 1370210400, # starting from 2013.06.03 00:00
-            "IFXDEEUR"      => 1428876000, # starting from 2015.04.13 00:00
-            "JPNIDXJPY"     => 1356994800, # starting from 2013.01.01 00:00
-            "LHADEEUR"      => 1429567200, # starting from 2015.04.21 00:00
-            "LIGHTCMDUSD"   => 1427839200, # starting from 2015.04.01 00:00
-            "LINDEEUR"      => 1429567200, # starting from 2015.04.21 00:00
-            "LXSDEEUR"      => 1429567200, # starting from 2015.04.21 00:00
-            "MRKDEEUR"      => 1427151600, # starting from 2015.03.24 00:00
-            "MUV2DEEUR"     => 1429567200, # starting from 2015.04.21 00:00
-            "PAH3DEEUR"     => 1429567200, # starting from 2015.04.21 00:00
-            "PSMDEEUR"      => 1429480800, # starting from 2015.04.20 00:00
-            "RWEDEEUR"      => 1429135200, # starting from 2015.04.16 00:00
-            "SAPDEEUR"      => 1429135200, # starting from 2015.04.16 00:00
-            "SDFDEEUR"      => 1429048800, # starting from 2015.04.15 00:00
-            "SIEDEEUR"      => 1429480800, # starting from 2015.04.20 00:00
-            "TKADEEUR"      => 1428962400, # starting from 2015.04.14 00:00
-            "TUI1DEEUR"     => 1429048800, # starting from 2015.04.15 00:00
-            "USA30IDXUSD"   => 1356994800, # starting from 2013.01.01 00:00
-            "USA500IDXUSD"  => 1356994800, # starting from 2013.01.01 00:00
-            "USATECHIDXUSD" => 1356994800, # starting from 2013.01.01 00:00
-            "VNADEEUR"      => 1428962400, # starting from 2015.04.14 00:00
-            "VOW3DEEUR"     => 1428962400, # starting from 2015.04.14 00:00
+            "ADSDEEUR"      => [
+                'begin' => 1426201200, // starting from 2015.03.13 00:00
+            ],
+            "ALVDEEUR"      => [
+                'begin' => 1429394400, // starting from 2015.04.19 00:00
+            ],
+            "AUSIDXAUD"     => [
+                'begin' => 1402524000, // starting from 2014.06.12 00:00
+            ],
+            "BASDEEUR"      => [
+                'begin' => 1429678800, // starting from 2015.04.22 07:00
+            ],
+            "BAYNDEEUR"     => [
+                'begin' => 1426806000, // starting from 2015.03.20 00:00
+            ],
+            "BEIDEEUR"      => [
+                'begin' => 1428444000, // starting from 2015.04.08 00:00
+            ],
+            "BMWDEEUR"      => [
+                'begin' => 1427151600, // starting from 2015.03.24 00:00
+            ],
+            "BRENTCMDUSD"   => [
+                'begin' => 1291244400, // starting from 2010.12.02 00:00
+            ],
+            "CHEIDXCHF"     => [
+                'begin' => 1356994800, // starting from 2013.01.01 00:00
+            ],
+            "CONDEEUR"      => [
+                'begin' => 1428444000, // starting from 2015.04.08 00:00
+            ],
+            "DAIDEEUR"      => [
+                'begin' => 1427410800, // starting from 2015.03.27 00:00
+            ],
+            "DB1DEEUR"      => [
+                'begin' => 1428962400, // starting from 2015.04.14 00:00
+            ],
+            "DBKDEEUR"      => [
+                'begin' => 1427238000, // starting from 2015.03.25 00:00
+            ],
+            "DEUIDXEUR"     => [
+                'begin' => 1356994800, // starting from 2013.01.01 00:00
+            ],
+            "DTEDEEUR"      => [
+                'begin' => 1427752800, // starting from 2015.03.31 00:00
+            ],
+            "EOANDEEUR"     => [
+                'begin' => 1429480800, // starting from 2015.04.20 00:00
+            ],
+            "ESPIDXEUR"     => [
+                'begin' => 1427238000, // starting from 2015.03.25 00:00
+            ],
+            "EUSIDXEUR"     => [
+                'begin' => 1433196000, // starting from 2015.06.02 00:00
+            ],
+            "FMEDEEUR"      => [
+                'begin' => 1427839200, // starting from 2015.04.01 00:00
+            ],
+            "FRAIDXEUR"     => [
+                'begin' => 1356994800, // starting from 2013.01.01 00:00
+            ],
+            "FREDEEUR"      => [
+                'begin' => 1428616800, // starting from 2015.04.10 00:00
+            ],
+            "HEIDEEUR"      => [
+                'begin' => 1427925600, // starting from 2015.04.02 00:00
+            ],
+            "HEN3DEEUR"     => [
+                'begin' => 1429567200, // starting from 2015.04.21 00:00
+            ],
+            "HKGIDXHKD"     => [
+                'begin' => 1370210400, // starting from 2013.06.03 00:00
+            ],
+            "IFXDEEUR"      => [
+                'begin' => 1428876000, // starting from 2015.04.13 00:00
+            ],
+            "JPNIDXJPY"     => [
+                'begin' => 1356994800, // starting from 2013.01.01 00:00
+            ],
+            "LHADEEUR"      => [
+                'begin' => 1429567200, // starting from 2015.04.21 00:00
+            ],
+            "LIGHTCMDUSD"   => [
+                'begin' => 1427839200, // starting from 2015.04.01 00:00
+            ],
+            "LINDEEUR"      => [
+                'begin' => 1429567200, // starting from 2015.04.21 00:00
+            ],
+            "LXSDEEUR"      => [
+                'begin' => 1429567200, // starting from 2015.04.21 00:00
+            ],
+            "MRKDEEUR"      => [
+                'begin' => 1427151600, // starting from 2015.03.24 00:00
+            ],
+            "MUV2DEEUR"     => [
+                'begin' => 1429567200, // starting from 2015.04.21 00:00
+            ],
+            "PAH3DEEUR"     => [
+                'begin' => 1429567200, // starting from 2015.04.21 00:00
+            ],
+            "PSMDEEUR"      => [
+                'begin' => 1429480800, // starting from 2015.04.20 00:00
+            ],
+            "RWEDEEUR"      => [
+                'begin' => 1429135200, // starting from 2015.04.16 00:00
+            ],
+            "SAPDEEUR"      => [
+                'begin' => 1429135200, // starting from 2015.04.16 00:00
+            ],
+            "SDFDEEUR"      => [
+                'begin' => 1429048800, // starting from 2015.04.15 00:00
+            ],
+            "SIEDEEUR"      => [
+                'begin' => 1429480800, // starting from 2015.04.20 00:00
+            ],
+            "TKADEEUR"      => [
+                'begin' => 1428962400, // starting from 2015.04.14 00:00
+            ],
+            "TUI1DEEUR"     => [
+                'begin' => 1429048800, // starting from 2015.04.15 00:00
+            ],
+            "USA30IDXUSD"   => [
+                'begin' => 1356994800, // starting from 2013.01.01 00:00
+            ],
+            "USA500IDXUSD"  => [
+                'begin' => 1356994800, // starting from 2013.01.01 00:00
+            ],
+            "USATECHIDXUSD" => [
+                'begin' => 1356994800, // starting from 2013.01.01 00:00
+            ],
+            "VNADEEUR"      => [
+                'begin' => 1428962400, // starting from 2015.04.14 00:00
+            ],
+            "VOW3DEEUR"     => [
+                'begin' => 1428962400, // starting from 2015.04.14 00:00
+            ],
 
             // commodities - energy
             #"E_Light" => 1324375200, // Light starting from 2011.12.20 10:00
@@ -208,41 +298,111 @@ return [
             #"E_XOM" => 1324375200, // Exxon Mobil starting from 2011.12.20 10:00
             #"E_YHOO" => 1326988800, // Yahoo starting from 2012.01.19 16:00
             // Currency pairs.
-            "EURUSD" => 1175270400, // starting from 2007.03.30 16:00
-            "AUDNZD" => 1229961600, // starting from 2008.12.22 16:00
-            "AUDUSD" => 1175270400, // starting from 2007.03.30 16:00
-            "AUDJPY" => 1175270400, // starting from 2007.03.30 16:00
-            "EURCHF" => 1175270400, // starting from 2007.03.30 16:00
-            "EURGBP" => 1175270400, // starting from 2007.03.30 16:00
-            "EURJPY" => 1175270400, // starting from 2007.03.30 16:00
-            "GBPCHF" => 1175270400, // starting from 2007.03.30 16:00
-            "GBPJPY" => 1175270400, // starting from 2007.03.30 16:00
-            "GBPUSD" => 1175270400, // starting from 2007.03.30 16:00
-            "NZDUSD" => 1175270400, // starting from 2007.03.30 16:00
-            "USDCAD" => 1175270400, // starting from 2007.03.30 16:00
-            "USDCHF" => 1175270400, // starting from 2007.03.30 16:00
-            "USDJPY" => 1175270400, // starting from 2007.03.30 16:00
-            "CADJPY" => 1175270400, // starting from 2007.03.30 16:00
-            "EURAUD" => 1175270400, // starting from 2007.03.30 16:00
-            "CHFJPY" => 1175270400, // starting from 2007.03.30 16:00
-            "EURCAD" => 1222167600, // starting from 2008.09.23 11:00
-            "EURNOK" => 1175270400, // starting from 2007.03.30 16:00
-            "EURSEK" => 1175270400, // starting from 2007.03.30 16:00
-            "USDNOK" => 1222639200, // starting from 2008.09.28 22:00
-            "USDSEK" => 1222642800, // starting from 2008.09.28 23:00
-            "USDSGD" => 1222642800, // starting from 2008.09.28 23:00
-            "AUDCAD" => 1266318000, // starting from 2010.02.16 11:00
-            "AUDCHF" => 1266318000, // starting from 2010.02.16 11:00
-            "CADCHF" => 1266318000, // starting from 2010.02.16 11:00
-            "EURNZD" => 1266318000, // starting from 2010.02.16 11:00
-            "GBPAUD" => 1266318000, // starting from 2010.02.16 11:00
-            "GBPCAD" => 1266318000, // starting from 2010.02.16 11:00
-            "GBPNZD" => 1266318000, // starting from 2010.02.16 11:00
-            "NZDCAD" => 1266318000, // starting from 2010.02.16 11:00
-            "NZDCHF" => 1266318000, // starting from 2010.02.16 11:00
-            "NZDJPY" => 1266318000, // starting from 2010.02.16 11:00
-            "XAGUSD" => 1289491200, // starting from 2010.11.11 16:00
-            "XAUUSD" => 1305010800, // starting from 2011.05.10 07:00
+            "EURUSD" => [
+                'begin' => 1175270400, // starting from 2007.03.30 16:00
+            ],
+            "AUDNZD" => [
+                'begin' => 1229961600, // starting from 2008.12.22 16:00
+            ],
+            "AUDUSD" => [
+                'begin' => 1175270400, // starting from 2007.03.30 16:00
+            ],
+            "AUDJPY" => [
+                'begin' => 1175270400, // starting from 2007.03.30 16:00
+            ],
+            "EURCHF" => [
+                'begin' => 1175270400, // starting from 2007.03.30 16:00
+            ],
+            "EURGBP" => [
+                'begin' => 1175270400, // starting from 2007.03.30 16:00
+            ],
+            "EURJPY" => [
+                'begin' => 1175270400, // starting from 2007.03.30 16:00
+            ],
+            "GBPCHF" => [
+                'begin' => 1175270400, // starting from 2007.03.30 16:00
+            ],
+            "GBPJPY" => [
+                'begin' => 1175270400, // starting from 2007.03.30 16:00
+            ],
+            "GBPUSD" => [
+                'begin' => 1175270400, // starting from 2007.03.30 16:00
+            ],
+            "NZDUSD" => [
+                'begin' => 1175270400, // starting from 2007.03.30 16:00
+            ],
+            "USDCAD" => [
+                'begin' => 1175270400, // starting from 2007.03.30 16:00
+            ],
+            "USDCHF" => [
+                'begin' => 1175270400, // starting from 2007.03.30 16:00
+            ],
+            "USDJPY" => [
+                'begin' => 1175270400, // starting from 2007.03.30 16:00
+            ],
+            "CADJPY" => [
+                'begin' => 1175270400, // starting from 2007.03.30 16:00
+            ],
+            "EURAUD" => [
+                'begin' => 1175270400, // starting from 2007.03.30 16:00
+            ],
+            "CHFJPY" => [
+                'begin' => 1175270400, // starting from 2007.03.30 16:00
+            ],
+            "EURCAD" => [
+                'begin' => 1222167600, // starting from 2008.09.23 11:00
+            ],
+            "EURNOK" => [
+                'begin' => 1175270400, // starting from 2007.03.30 16:00
+            ],
+            "EURSEK" => [
+                'begin' => 1175270400, // starting from 2007.03.30 16:00
+            ],
+            "USDNOK" => [
+                'begin' => 1222639200, // starting from 2008.09.28 22:00
+            ],
+            "USDSEK" => [
+                'begin' => 1222642800, // starting from 2008.09.28 23:00
+            ],
+            "USDSGD" => [
+                'begin' => 1222642800, // starting from 2008.09.28 23:00
+            ],
+            "AUDCAD" => [
+                'begin' => 1266318000, // starting from 2010.02.16 11:00
+            ],
+            "AUDCHF" => [
+                'begin' => 1266318000, // starting from 2010.02.16 11:00
+            ],
+            "CADCHF" => [
+                'begin' => 1266318000, // starting from 2010.02.16 11:00
+            ],
+            "EURNZD" => [
+                'begin' => 1266318000, // starting from 2010.02.16 11:00
+            ],
+            "GBPAUD" => [
+                'begin' => 1266318000, // starting from 2010.02.16 11:00
+            ],
+            "GBPCAD" => [
+                'begin' => 1266318000, // starting from 2010.02.16 11:00
+            ],
+            "GBPNZD" => [
+                'begin' => 1266318000, // starting from 2010.02.16 11:00
+            ],
+            "NZDCAD" => [
+                'begin' => 1266318000, // starting from 2010.02.16 11:00
+            ],
+            "NZDCHF" => [
+                'begin' => 1266318000, // starting from 2010.02.16 11:00
+            ],
+            "NZDJPY" => [
+                'begin' => 1266318000, // starting from 2010.02.16 11:00
+            ],
+            "XAGUSD" => [
+                'begin' => 1289491200, // starting from 2010.11.11 16:00
+            ],
+            "XAUUSD" => [
+                'begin' => 1305010800, // starting from 2011.05.10 07:00
+            ],
         ],
-    ]
+    ],
 ];

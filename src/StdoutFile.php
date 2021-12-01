@@ -14,6 +14,10 @@ class StdoutFile extends AbstractFile
     protected string $filename = 'stdout';
     protected $handle = STDOUT;
 
+    public function isInjectable(): ?string {
+        return null;
+    }
+
     public function open(string $mode = 'r')
     {
         // Do nothing as STDOUT is a special file handler, already opened by PHP
@@ -85,4 +89,20 @@ class StdoutFile extends AbstractFile
     {
         throw new RuntimeException("Cannot read from write only file" . $this->filename);
     }
+
+    public function setServerName(string $serveRName) {}
+
+    public function getMinLotSize() {}
+
+    public function setMinLotSize($minLotSize) {}
+
+    public function getMaxLotSize() {}
+
+    public function setMaxLotSize($maxLotSize) {}
+
+    public function getLotStep() {}
+
+    public function setLotStep($lotStep) {}
+    public function setStopLevel($stopLevel) {}
+
 }

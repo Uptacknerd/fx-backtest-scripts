@@ -4,8 +4,17 @@ namespace Uptacknerd\FxBtScripts;
 
 use Datetime;
 use Generator;
-interface FileInterface {
+
+interface FileInterface
+{
     public function __construct(string $filename, bool $detectTimeframe = false);
+
+    /**
+     * Is the output injectable to a trading software MT4, MT5, ...
+     *
+     * @return boolean
+     */
+    // public function isInjectable(): ?string;
 
     public function open(string $mode = 'r');
 
@@ -50,6 +59,8 @@ interface FileInterface {
     public function getEndDate();
 
     public function incrementBarsCount();
+
+    public function setServerName(string $serverName);
 
     /**
      * Terminate writing  the file (to update headers)

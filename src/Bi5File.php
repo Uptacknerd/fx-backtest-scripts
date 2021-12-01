@@ -51,6 +51,10 @@ class Bi5File extends AbstractFile
         @mkdir($this->rawTmpDir);
     }
 
+    public function isInjectable(): ?string {
+        return null;
+    }
+
     public function setTimeframe(int $timeframe)
     {
         // Tick data is 0
@@ -214,6 +218,8 @@ class Bi5File extends AbstractFile
     private function buildCacheFilename(): string
     {
         $dir = [dirname(__DIR__)];
+        $dir[] = 'cache';
+        $dir[] = 'php';
         $dir[] = strtoupper($this->instrument);
         $dir[] = $this->position->format('Y');
         $dir[] = $this->position->format('m');
@@ -362,7 +368,7 @@ class Bi5File extends AbstractFile
     {
         global $CONFIG;
 
-        return $CONFIG->getInstrumentStartTimestamp($this->instrument);
+        return $CONFIG->getInstrumentStartTimestamp($this->instrument)['begin'];
     }
 
     /**
@@ -409,6 +415,21 @@ class Bi5File extends AbstractFile
 
         $this->extractCommand = $extract;
     }
+
+    public function setServerName(string $serveRName) {}
+
+    public function getMinLotSize() {}
+
+    public function setMinLotSize($minLotSize) {}
+
+    public function getMaxLotSize() {}
+
+    public function setMaxLotSize($maxLotSize) {}
+
+    public function getLotStep() {}
+
+    public function setLotStep($lotStep) {}
+    public function setStopLevel($stopLevel) {}
 
     private array $instrumentData = [];
 }

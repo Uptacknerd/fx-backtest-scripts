@@ -11,6 +11,10 @@ use Generator;
 class NullFile extends AbstractFile
 {
 
+    public function isInjectable(): ?string {
+        return null;
+    }
+
     public function open(string $mode = 'r')
     {
     }
@@ -65,4 +69,20 @@ class NullFile extends AbstractFile
     public function addTick(Bar $bar)
     {
     }
+
+    public function setServerName(string $serveRName) {}
+
+    public function getMinLotSize() {}
+
+    public function setMinLotSize($minLotSize) {}
+
+    public function getMaxLotSize() {}
+
+    public function setMaxLotSize($maxLotSize) {}
+
+    public function getLotStep() {}
+
+    public function setLotStep($lotStep) {}
+    public function setStopLevel($stopLevel) {}
+
 }
