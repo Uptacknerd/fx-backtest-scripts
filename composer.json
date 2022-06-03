@@ -5,11 +5,15 @@
         "ext-mbstring": "*",
         "ext-curl": "*",
         "docopt/docopt": "^1.0",
-        "ext-zlib": "*"
+        "ext-zlib": "*",
+        "amphp/parallel": "^1.4"
     },
     "autoload": {
         "psr-4": {
             "Uptacknerd\\FxBtScripts\\": "src/"
-        }
+        },
+        "files": [
+            "src/functions.php"
+        ]
     }
 }

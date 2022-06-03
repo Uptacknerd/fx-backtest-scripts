@@ -39,12 +39,17 @@
 
 */
 
+use Amp\Parallel\Worker;
+use Amp\Promise;
+
+require __DIR__ . '/vendor/autoload.php';
+
 $symbols = [
     //"EURUSD" => 1175270400, // starting from 2007.03.30 16:00
-    "XAUUSD" => Datetime::createFromFormat('Y-m-d H:i:s', '2021-01-01 00:00:00', new DateTimeZone('UTC'))->format('U'), // starting from 2011.05.10 07:00
+    "XAUUSD" => Datetime::createFromFormat('Y-m-d H:i:s', '2011-01-01 00:00:00', new DateTimeZone('UTC'))->format('U'), // starting from 2011.05.10 07:00
 ];
-if (file_exists('symbols.php')) {
-    require 'symbols.php';
+if (file_exists(__DIR__ . '/symbols.php')) {
+    require __DIR__ . '/symbols.php';
 }
 
 if (empty($symbols)) {
@@ -286,6 +291,7 @@ if (empty($symbols)) {
     ];
 }
 
+
 $missingfilecount = 0; /* number of the file does not exist on the server */
 $failedfilecount = 0;  /* number of files failed to download */
 $successfilecount = 0; /* number of files successfully downloaded */
@@ -299,112 +305,29 @@ $lastday = 0;  /* Day one day before the download number */
 $curtime = time();
 error("Current GMT time:" . gmstrftime("%m/%d/%Y %H:%M:%S", $curtime) . "\r\n");
 
-/* For each currency circulates download the current version symbols.php contains only one currency pair */
+$threadsCount = 10;
+
 foreach ($symbols as $pair => $firsttick) {
     $firsttick -= $firsttick % 3600; // Round to Hour zero minutes and zero seconds
-    error("Info: Downloading $pair starting with " . gmstrftime("%m/%d/%Y %H:%M:%S", $firsttick) . "\r\n");
+    error(sprintf("Info: Downloading %s starting at %s with %i threads", $pair, gmstrftime("%m/%d/%Y %H:%M:%S", $firsttick), $threadsCount) . PHP_EOL);
 
-    /* Download individual files, each containing one hour of tick data */
-    $handle = curl_init();
-    if ($handle === false) {
-        error("Failed to prepare HTTP requests");
-        exit(1);
+    $promises = [];
+    for ($offset = 0; $offset < $threadsCount; $offset++) {
+        $promises[$offset] = Worker\enqueueCallable('Uptacknerd\FxBtScripts\downloadTask', __DIR__, $pair, $firsttick + (3600 * $offset), $curtime, $threadsCount);
     }
-    for ($i = $firsttick; $i < $curtime - 3600; $i += 3600) {
-        $year = gmstrftime('%Y', $i);
-        $month = str_pad(gmstrftime('%m', $i) - 1, 2, '0', STR_PAD_LEFT); // format (month-1), such as the conversion of 00 January, February -> 01
-        $day = gmstrftime('%d', $i);
-        $hour = gmstrftime('%H', $i);
-        $url = "http://datafeed.dukascopy.com/datafeed/$pair/$year/$month/$day/{$hour}h_ticks.bi5";
 
-        // When the file begins to download before the first one day to $ lasttim, $ lastday recorded.  Prompt action is actually downloaded to the day, no other practical effect.
-        if ($day != $lastday) {
-            // If you download the previous day within three seconds BIN data was processed, that the previous day's data has been downloaded.
-            if (time() - $lasttime < 3) {
-                //error("BIN data already downloaded. Skipped.\r\n");
-            }
+    $responses = Promise\wait(Promise\all($promises));
 
-            $lasttime = time();
-            $lastday = $day;
-            echo ("Info: Downloading BIN data of $pair " . gmstrftime("%m/%d/%Y", $i) . "\r\n");
-        }
-
-        // Calculate the local storage path
-        $localpath = "$pair/$year/$month/$day/";
-        $binlocalfile = $localpath . $hour . "h_ticks.bin";
-        $localfile = $localpath . $hour . "h_ticks.bi5";
-
-        // Only when the local file does not exist when it starts to download
-        if (file_exists($localfile) || file_exists($binlocalfile)) {
-            // Local file already exists, skip.  Logic programs to ensure every file download is complete.
-            //error("Info: skipping $url, local file already exists.\r\n");
-            $skippedfilecount++;
-            continue;
-        }
-        // If path does not exists, create it
-        if (!file_exists($localpath)) {
-            mkdir($localpath, 0777, true);
-        }
-
-        // If you can not connect to the server is continuously attempting to download, try up to three times
-        curl_setopt($handle, CURLOPT_URL, $url);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($handle, CURLOPT_HEADER, 0);
-
-        $retryCount = 0;
-        do {
-            $result = curl_exec($handle);
-            $retryCount++;
-        } while ($retryCount <= 3 && curl_errno($handle));
-
-        if (curl_errno($handle)) {
-            error("FATAL: Couldn't download $url.\r\nError was: " . curl_error($handle) . "\r\n");
-            $quitstring = "Unable to connect to server";
-            exit(1);
-        }
-
-        // The server returns the data, but does not necessarily represent the download success
-        switch (curl_getinfo($handle, CURLINFO_HTTP_CODE)) {
-            case 404:
-                // The server returns a 404 number to indicate you want to download the file does not exist
-                $weekday = gmstrftime('%a', $i);
-                if (strcasecmp($weekday, 'sun') == 0 || strcasecmp($weekday, 'sat') == 0) {
-                    // Missing file on weekends data
-                    error("Info: missing weekend file $url\r\n");
-                } else {
-                    error("WARNING: missing file $url ($i - " . gmstrftime("%m/%d/%Y %H:%M GMT", $i) . ")\r\n");
-                }
-
-                $missingfilecount++;
-                break;
-
-            case 200:
-                // The server returns a 200 number, indicating that the file is complete download.
-                file_put_contents($localfile, $result);
-                //error("Info: successfully downloaded $url\r\n");
-                $successfilecount++;
-                break;
-
-            default:
-                // Returns the number of unknown, indicates that the file download an unknown error
-                error("WARNING: did not download $url ($i - " . gmstrftime("%m/%d/%Y %H:%M GMT", $i) . ") - error code was " . curl_getinfo($handle, CURLINFO_HTTP_CODE) . "\r\nContent was: $result\r\n");
-                $failedfilecount++;
-        }
-        // Here the end of a file to download, about to enter the next file
-
+    $missingfilecount = 0; /* number of the file does not exist on the server */
+    $failedfilecount = 0;  /* number of files failed to download */
+    $successfilecount = 0; /* number of files successfully downloaded */
+    $skippedfilecount = 0; /* the number of files to be skipped */
+    foreach ($responses as $offset => $response) {
+        $missingfilecount += $response['missing'];
+        $failedfilecount +=  $response['failed'];
+        $successfilecount += $response['success'];
+        $skippedfilecount += $response['skipped'];
     }
-    curl_close($handle);
-
-    $totalseconds = time() - $curtime;
-
-    error("has been completed" . $pair . ". The download task total use " . outtm($totalseconds) . " state exit is:" . $quitstring . PHP_EOL);
-    error("There are" . $successfilecount . "files in this task has been downloaded" . PHP_EOL . "where " . $skippedfilecount . " skipped as the files already exists" . PHP_EOL);
-    error("There are " . $missingfilecount . "missing files on the server, so could not be downloaded" . PHP_EOL . "There are " . $failedfilecount . "files where unknown error occured, so a file was not saved during the download process." . PHP_EOL);
-
-
-    // Here ends a currency download all the files downloaded, about to enter the next currency pair.
-    // We only deal with the current version of one pair of currency pairs, so the use of break out of the loop, the actual end of the program.
-    break;
 }
 
 function error($error)
