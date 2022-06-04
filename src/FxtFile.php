@@ -129,11 +129,16 @@ class FxtFile extends AbstractFile
     private int      $orderFreezeLevel = 0; // Order's freeze level in points.
     private int      $generationErrorsCount = 0;
 
+    private Datetime $today;
+
     public function __construct(string $filename, bool $detectTimeframe = false)
     {
         parent::__construct($filename, $detectTimeframe);
         $this->startDate = new Datetime('now', new DateTimeZone('GMT'));
         $this->endDate = new Datetime('now', new DateTimeZone('GMT'));
+
+        $this->today = new Datetime('now', new DateTimeZone('UTC'));
+        $this->today->setTime(0, 0, 0, 0);
     }
 
     /*
@@ -516,7 +521,7 @@ class FxtFile extends AbstractFile
 
     public function produceFormat(): int
     {
-        return self::PRODUCE_BOTH;
+        return self::PRODUCE_BAR;
     }
 
     public function consumeFormat(): int
@@ -594,6 +599,8 @@ class FxtFile extends AbstractFile
     {
         $position = ftell($this->handle);
         $date = new Datetime();
+        $bar = $this->readBar();
+        $date = $bar->getOpenDate();
         fseek($this->handle, $position);
 
         return $date;
@@ -602,6 +609,14 @@ class FxtFile extends AbstractFile
     public function readTicks(): Generator
     {
         throw new RuntimeException("Not implemented");
+        if ($this->timeframe != 0) {
+            throw new RuntimeException("Does not contains ticks");
+        }
+    }
+
+    public function readTick(): ?Bar {
+        // FXT file contains bars. A tick is modelized as a bar
+        return $this->readBar();
     }
 
     public function readBars(): Generator

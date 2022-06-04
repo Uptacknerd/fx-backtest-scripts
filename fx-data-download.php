@@ -45,8 +45,8 @@ use Amp\Promise;
 require __DIR__ . '/vendor/autoload.php';
 
 $symbols = [
-    //"EURUSD" => 1175270400, // starting from 2007.03.30 16:00
-    "XAUUSD" => Datetime::createFromFormat('Y-m-d H:i:s', '2011-01-01 00:00:00', new DateTimeZone('UTC'))->format('U'), // starting from 2011.05.10 07:00
+    "EURUSD" => 1175270400, // starting from 2007.03.30 16:00
+    // "XAUUSD" => Datetime::createFromFormat('Y-m-d H:i:s', '2011-01-01 00:00:00', new DateTimeZone('UTC'))->format('U'), // starting from 2011.05.10 07:00
 ];
 if (file_exists(__DIR__ . '/symbols.php')) {
     require __DIR__ . '/symbols.php';

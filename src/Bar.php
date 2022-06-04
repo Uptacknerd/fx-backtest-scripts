@@ -16,7 +16,7 @@ class Bar
     private ?float    $low         = null;
     private ?float    $close       = null;
     private ?float    $volume      = null;
-    private ?Datetime  $tickDate    = null;
+    private ?Datetime  $tickDate   = null;
     // private int   $flags;
 
     public function __construct(int $timeframe) {

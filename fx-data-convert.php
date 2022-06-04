@@ -19,10 +19,8 @@ require_once __DIR__ . '/vendor/autoload.php';
 //      fx-data-convert.php --input in_file --timeframe=timeframe --output-type=model [--output=out_file] [--spread=spread] [--begin=date] [--end=date]
 
     $doc = <<<DOC
-    Naval Fate.
-
     Usage:
-      fx-data-convert.php --input in_file --timeframe=timeframe --symbol=symbol --output-type=model [--output=out_file] [--spread=spread] [--begin=date] [--end=date]
+      fx-data-convert.php --input=in_file --timeframe=timeframe --symbol=symbol --output-type=model [--output=out_file] [--spread=spread] [--begin=date] [--end=date]
       fx-data-convert.php --version
 
     Options:
@@ -90,6 +88,10 @@ require_once __DIR__ . '/vendor/autoload.php';
         $beginDate = $beginBar->setOpenDate($beginDate)->getOpenDate();
     }
 
+    if ($beginDate >= $endDate) {
+        throw new RuntimeException("Begin date must be smaller than end date");
+    }
+
     $consumer = getConsumer($args['--output']);
     $consumer->setStartDate($beginDate);
     $consumer->setEndDate($endDate);
@@ -101,13 +103,13 @@ require_once __DIR__ . '/vendor/autoload.php';
     $productionType = $producer->negociateOutputType($consumer, $args['--output-type'] == 'tick');
     $consommationType = $consumer->negociateInputType($producer, $args['--output-type'] == 'tick');
 
-    if ($productionType == AbstractFile::PRODUCE_TICK) {
-        if ($consommationType == AbstractFile::CONSUME_TICK) {
+    if ($productionType == AbstractFile::PRODUCE_TICK || $productionType = AbstractFile::PRODUCE_BOTH) {
+        if ($consommationType == AbstractFile::CONSUME_TICK || $consommationType == AbstractFile::CONSUME_BOTH) {
             // produce tick and consume tick
-            loopTicktoTick($producer, $consumer, $beginDate, $endDate, $outTimeframe);
+            loopTickToTick($producer, $consumer, $beginDate, $endDate, $outTimeframe);
         } else {
             // produce tick and consume bar
-            loopTicktoBar($producer, $consumer, $beginDate, $endDate, $outTimeframe);
+            loopTickToBar($producer, $consumer, $beginDate, $endDate, $outTimeframe);
         }
     } else {
         if ($consommationType == AbstractFile::CONSUME_TICK) {
@@ -116,7 +118,7 @@ require_once __DIR__ . '/vendor/autoload.php';
         } else {
             // produce bar and consume bar
             //TODO: check that input timeframe is lower or equal to output timeframe
-            loopBartoBar($producer, $consumer, $beginDate, $endDate, $outTimeframe);
+            loopBarToBar($producer, $consumer, $beginDate, $endDate, $outTimeframe);
         }
     }
 
@@ -125,7 +127,7 @@ require_once __DIR__ . '/vendor/autoload.php';
     $consumer->close();
 })();
 
-function loopTicktoTick(FileInterface $producer, FileInterface $consumer, Datetime $beginDate, Datetime $endDate, $timeframe) {
+function loopTickToTick(FileInterface $producer, FileInterface $consumer, Datetime $beginDate, Datetime $endDate, $timeframe) {
     $producer->seek($beginDate);
     $progressDate = clone $beginDate;
     $percent = 0;
@@ -201,7 +203,7 @@ function loopTicktoTick(FileInterface $producer, FileInterface $consumer, Dateti
     }
 }
 
-function loopTicktoBar(FileInterface $producer, FileInterface $consumer, Datetime $beginDate, Datetime $endDate, $timeframe) {
+function loopTickToBar(FileInterface $producer, FileInterface $consumer, Datetime $beginDate, Datetime $endDate, $timeframe) {
     $producer->seek($beginDate);
     $progressDate = clone $beginDate;
     $percent = 0;
@@ -270,7 +272,7 @@ function loopTicktoBar(FileInterface $producer, FileInterface $consumer, Datetim
     }
 }
 
-function loopBartoBar(FileInterface $producer, FileInterface $consumer, Datetime $beginDate, Datetime $endDate, $timeframe) {
+function loopBarToBar(FileInterface $producer, FileInterface $consumer, Datetime $beginDate, Datetime $endDate, $timeframe) {
     throw new RuntimeException ("Bar to Bar not implemented");
 }
 
@@ -293,7 +295,6 @@ function getProducer(string $filename): FileInterface {
 
     throw new RuntimeException("Unsupported file format: $extension");
 }
-
 
 function getConsumer(string $filename): FileInterface {
     if ($filename == 'null') {
