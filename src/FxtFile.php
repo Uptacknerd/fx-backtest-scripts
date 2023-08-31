@@ -120,13 +120,13 @@ class FxtFile extends AbstractFile
 
     private int      $firstModelingBarIndex = 1; // Index of the first bar at which modeling started (0 for the first bar).
     private int      $LasttModelingBarIndex = 0; // Index of the last bar at which modeling started (0 for the last bar).
-    private int      $ModelingBarIndexM1 = 0; // Bar index where modeling started using M1 bars (0 for the first bar).
-    private int      $ModelingBarIndexM5 = 0; // Bar index where modeling started using M5 bars (0 for the first bar).
-    private int      $ModelingBarIndexM15 = 0; // Bar index where modeling started using M15 bars (0 for the first bar).
-    private int      $ModelingBarIndexM30 = 0; // Bar index where modeling started using M30 bars (0 for the first bar).
-    private int      $ModelingBarIndexH1 = 0; // Bar index where modeling started using H1 bars (0 for the first bar).
-    private int      $ModelingBarIndexH4 = 0; // Bar index where modeling started using H4 bars (0 for the first bar).
-    private int      $orderFreezeLevel = 0; // Order's freeze level in points.
+    private int      $ModelingBarIndexM1 = 0;    // Bar index where modeling started using M1 bars (0 for the first bar).
+    private int      $ModelingBarIndexM5 = 0;    // Bar index where modeling started using M5 bars (0 for the first bar).
+    private int      $ModelingBarIndexM15 = 0;   // Bar index where modeling started using M15 bars (0 for the first bar).
+    private int      $ModelingBarIndexM30 = 0;   // Bar index where modeling started using M30 bars (0 for the first bar).
+    private int      $ModelingBarIndexH1 = 0;    // Bar index where modeling started using H1 bars (0 for the first bar).
+    private int      $ModelingBarIndexH4 = 0;    // Bar index where modeling started using H4 bars (0 for the first bar).
+    private int      $orderFreezeLevel = 0;      // Order's freeze level in points.
     private int      $generationErrorsCount = 0;
 
     private Datetime $today;
@@ -164,6 +164,10 @@ class FxtFile extends AbstractFile
         return sprintf("%s%s_%s.fxt", $symbol, $timeframe / 60, $model);
     }
     */
+
+    public function setOptions($args): bool {
+        return true;
+    }
 
     // public function setOptions($args)
     // {
@@ -557,7 +561,7 @@ class FxtFile extends AbstractFile
         $endBar = $this->readBar();
 
         while ($minPosition != $maxPosition) {
-            $recordCount = ($maxPosition - $minPosition) / 56;
+            $recordCount = ($maxPosition - $minPosition) / 56; // 56 bytes per record
             $middlePosition = (int) ($recordCount / 2);
             $middlePosition = strlen($this->getHeader()) + $middlePosition;
             $middleBar = $this->readBar();
@@ -579,12 +583,22 @@ class FxtFile extends AbstractFile
         }
     }
 
+    /**
+     * Seek to first record of the file
+     *
+     * @return void
+     */
     public function seekFirst()
     {
         $minPosition = strlen($this->getHeader());
         fseek($this->handle, $minPosition);
     }
 
+    /**
+     * Seek to last record of the file
+     *
+     * @return void
+     */
     public function seekLast()
     {
         $minPosition = strlen($this->getHeader());
@@ -621,7 +635,9 @@ class FxtFile extends AbstractFile
 
     public function readBars(): Generator
     {
-        throw new RuntimeException("Not implemented");
+        while ($this->tell() < $this->today) {
+            yield $this->readBar();
+        }
     }
 
     public function readBar(): ?Bar
@@ -676,7 +692,7 @@ class FxtFile extends AbstractFile
     /**
      * Write the current bar with its tick timestamp
      */
-    public function addTick(Bar $bar)
+    public function addTick(Bar $bar, Tick $tick)
     {
         $format = self::LITTLE_ENDIAN_U_INT32 .
             self::LITTLE_ENDIAN_U_INT32 .
@@ -698,7 +714,7 @@ class FxtFile extends AbstractFile
                 $bar->getHigh(),
                 $bar->getLow(),
                 $bar->getClose(),
-                max($bar->getVolume(), 1),
+                max($bar->getVolume() / 1000000, 1),
                 $bar->getTickDate()->getTimestamp(),
                 4 // A flag telling how to wake the EA. Unclear at the moment. Values 0 and 4 observed in original tool and other tools
             )
@@ -773,6 +789,7 @@ class FxtFile extends AbstractFile
         $this->setLotStep($CONFIG->getLotStep('vfx', $symbol));
         $this->setStopLevel($CONFIG->getStopLevel('vfx', $symbol));
         $this->setBaseCurrency($CONFIG->getBaseCurrency('vfx', $symbol));
+        $this->setMarginCurrency($CONFIG->getBaseCurrency('vfx', $symbol));
         $spread = $args['--spread'] ?? $CONFIG->getSpread('vfx', $symbol);
         $this->setSpread($spread);
         $this->setContractSize($CONFIG->getContractSize('vfx', $symbol));

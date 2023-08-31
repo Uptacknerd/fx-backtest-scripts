@@ -9,7 +9,8 @@ use Generator;
 
 class CsvFile extends AbstractFile
 {
-    private int $currentLine = 0;
+    private string $outputFormat = '';
+    private ?Tick $previousTick = null;
 
     public function __construct(string $filename, bool $detectTimeframe = false) {
         parent::__construct($filename, $detectTimeframe);
@@ -19,7 +20,24 @@ class CsvFile extends AbstractFile
         if ($this->handle === null) {
             return;
         }
-        fclose($this->handle);
+        if (get_resource_type($this->handle) == 'stream') {
+            fclose($this->handle);
+        }
+    }
+
+    public function setOptions(array $args): bool {
+        switch (strtolower($args['--output-format'] ?? '')) {
+            case 'mt5-tick':
+                $this->outputFormat = 'mt5-tick';
+                break;
+            case 'mt5-bar':
+                $this->outputFormat = 'mt5-bar';
+                break;
+            case 'ohlcv':
+                $this->outputFormat = 'ohlcv';
+                break;
+        }
+        return true;
     }
 
     public function isInjectable(): ?string {
@@ -27,8 +45,23 @@ class CsvFile extends AbstractFile
     }
 
     public function open(string $mode = 'r') {
+        switch ($this->outputFormat) {
+            case 'mt5-tick':
+                $header = "Date,Bid,Ask,Last,Volume,Flags" . PHP_EOL;
+                break;
+            case 'mt5-bar':
+                $header = "Date,Open,High,Low,Close,Volume" . PHP_EOL;
+                break;
+            case 'ohlcv':
+                $header = "Date,Open,High,Low,Close,Volume" . PHP_EOL;
+                break;
+        }
         $this->handle = fopen($this->filename, $mode);
-        $this->currentLine = 0;
+        switch ($mode) {
+            case 'w':
+            case 'w+':
+                fwrite($this->handle, $header);
+        }
         if ($this->handle === false) {
             throw new RuntimeException("Failed to open " . $this->filename);
         }
@@ -168,8 +201,45 @@ class CsvFile extends AbstractFile
         fwrite($this->handle, implode(',', $row) . PHP_EOL);
     }
 
-    public function addTick(Bar $bar)
+    public function addTick(Bar $bar, Tick $tick)
     {
+        if ($this->outputFormat == 'mt5-bar') {
+            $this->addTickMt5Bar($bar, $tick);
+        } else if ($this->outputFormat == 'mt5-tick') {
+            $this->addTickMt5Tick($bar, $tick);
+        } else {
+            $this->addTickOhlcv($bar, $tick);
+        }
+        $this->previousTick = $tick;
+    }
+
+    protected function addTickMt5Bar(Bar $bar, Tick $tick) {
+        Throw new RuntimeException("Not implemented");
+    }
+
+    protected function addTickMt5Tick(Bar $bar, Tick $tick) {
+        $row = [];
+        $row[] = $tick->getDate()->format('Y.m.d H:i:s.u');
+        $flag = 0;
+        if ($this->previousTick === null || $this->previousTick->getBid() != $tick->getBid()) {
+            $row[] = number_format($tick->getBid(), 6, '.', '');
+            $flag |= 2;
+        } else {
+            $row[] = '';
+        }
+        if ($this->previousTick === null || $this->previousTick->getAsk() != $tick->getAsk()) {
+            $row[] = number_format($tick->getAsk(), 6, '.', '');
+            $flag |= 4;
+        } else {
+            $row[] = '';
+        }
+        $row[] = '0'; // in MT5 this matches the "last" column. Don't know what is it, is is empty in tick exports from MT5
+        $row[] = '0';// Volume; seems always empty in tick exports from MT5
+        $row[] = $flag;
+        fwrite($this->handle, implode(',', $row) . PHP_EOL);
+    }
+
+    protected function addTickOhlcv(Bar $bar, Tick $tick) {
         $row = [];
         $row[]  = $bar->getOpenDate()->format('Y.m.d H:i:s');
         $row[] .= number_format($bar->getOpen(), 6, '.', '');

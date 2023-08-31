@@ -20,21 +20,24 @@ require_once __DIR__ . '/vendor/autoload.php';
 
     $doc = <<<DOC
     Usage:
-      fx-data-convert.php --input=in_file --timeframe=timeframe --symbol=symbol --output-type=model [--output=out_file] [--spread=spread] [--begin=date] [--end=date]
+      fx-data-convert.php --input in_file --timeframe timeframe --symbol symbol --output-type model [--output-format format] [--output out_file] [--spread spread] [--begin date] [--end date] [--compress] [--point=point]
       fx-data-convert.php --version
 
     Options:
-      -h --help                Show this screen.
-      --version                Show version.
-      -c --config config       Name of a server configuration (not implemented yet)
-      -i --input=in_file       file to read data from
-      -b --begin=date          Date where the convertion should begin
-      -e --end=date            Date where the conversion should finish
-      -o --output=file         Filename where data are written
-      --symbol=symbol          Symbol
-      -t --timeframe=timeframe Timeframe
-      -ot --output-type=type   tick | bar : output ticks or bars
-      -s --spread=spread       Spread
+      -h --help                   Show this screen.
+      --version                   Show version.
+      -c --config config          Name of a server configuration (not implemented yet)
+      -i --input=in_file          file to read data from
+      -b --begin=date             Date where the convertion should begin (UTC)
+      -e --end=date               Date where the conversion should finish (UTC)
+      -o --output=file            Filename where data are written
+      --symbol=symbol             Symbol
+      -t --timeframe=timeframe    Timeframe
+      -ot --output-type=type      tick | bar : output ticks or bars
+      -of --output-format=format  MT4-tick | MT4-bar | MT5-tick | MT5-bar | OHLCV : output format
+      -s --spread=spread          Spread
+      -p --point=point            Point value (ex: 0.01 for NAS100)
+      -c --compress               Compress cached data
     DOC;
 
     $CONFIG = new Config();
@@ -48,6 +51,7 @@ require_once __DIR__ . '/vendor/autoload.php';
     }
 
     $producer = getProducer($args['--input']);
+    $producer->setOptions(iterator_to_array($args));
     $producer->open('r');
 
     // Determine timeframe
@@ -93,6 +97,7 @@ require_once __DIR__ . '/vendor/autoload.php';
     }
 
     $consumer = getConsumer($args['--output']);
+    $consumer->setOptions(iterator_to_array($args));
     $consumer->setStartDate($beginDate);
     $consumer->setEndDate($endDate);
     $consumer->setSymbol($args['--symbol']);
@@ -107,18 +112,22 @@ require_once __DIR__ . '/vendor/autoload.php';
         if ($consommationType == AbstractFile::CONSUME_TICK || $consommationType == AbstractFile::CONSUME_BOTH) {
             // produce tick and consume tick
             loopTickToTick($producer, $consumer, $beginDate, $endDate, $outTimeframe);
-        } else {
+        } else if ($consommationType == AbstractFile::CONSUME_BAR) {
             // produce tick and consume bar
             loopTickToBar($producer, $consumer, $beginDate, $endDate, $outTimeframe);
+        } else {
+            throw new RuntimeException("Destination format is not creatable");
         }
     } else {
         if ($consommationType == AbstractFile::CONSUME_TICK) {
             // produce bar and consume tick
             throw new RuntimeException("Cannot convert bars into ticks");
-        } else {
+        } else if ($consommationType == AbstractFile::CONSUME_BAR || $consommationType == AbstractFile::CONSUME_BOTH) {
             // produce bar and consume bar
             //TODO: check that input timeframe is lower or equal to output timeframe
             loopBarToBar($producer, $consumer, $beginDate, $endDate, $outTimeframe);
+        } else {
+            throw new RuntimeException("Destination format is not creatable");
         }
     }
 
@@ -126,6 +135,15 @@ require_once __DIR__ . '/vendor/autoload.php';
     $consumer->finish();
     $consumer->close();
 })();
+
+function knownSymbols(): array
+{
+    if (file_exists(__DIR__ . '/symbols.php')) {
+        require_once __DIR__ . '/symbols.php';
+    }
+
+    return $symbols;
+}
 
 function loopTickToTick(FileInterface $producer, FileInterface $consumer, Datetime $beginDate, Datetime $endDate, $timeframe) {
     $producer->seek($beginDate);
@@ -151,9 +169,9 @@ function loopTickToTick(FileInterface $producer, FileInterface $consumer, Dateti
             $bar->setHigh($tick->getBid());
             $bar->setLow($tick->getBid());
             $bar->setClose($tick->getBid());
-            $bar->setVolume($tick->getBidVolume() + $tick->getAskVolume());
+            $bar->setVolume(($tick->getBidVolume() + $tick->getAskVolume()) / 100000);
             $bar->setTickDate($tick->getDate());
-            $consumer->addTick($bar);
+            $consumer->addTick($bar, $tick);
             $consumer->incrementBarsCount();
         } else {
             if ($tick->getDate() < $bar->getOpenDate()) {
@@ -161,7 +179,8 @@ function loopTickToTick(FileInterface $producer, FileInterface $consumer, Dateti
                 fwrite(STDERR, "Invalid tick : tick date (" . $tick->getDate()->format('Y:m:d H:i:s.u') . ") < bar date (" . $bar->getOpenDate()->format('Y-m-d H:i:s.u'). ")" . PHP_EOL) ;
             }
             if ($tick->getDate() >= $bar->getCloseDate()) {
-                $consumer->addTick($bar);
+                // The current bar is finished. Senf its last tick then create a new bar
+                // $consumer->addTick($bar); // This line is wrong : the tick has already been sent
 
                 $bar = new Bar($timeframe);
                 $bar->setOpenDate($tick->getDate());
@@ -169,18 +188,18 @@ function loopTickToTick(FileInterface $producer, FileInterface $consumer, Dateti
                 $bar->setHigh($tick->getBid());
                 $bar->setLow($tick->getBid());
                 $bar->setClose($tick->getBid());
-                $bar->setVolume($tick->getBidVolume() + $tick->getAskVolume());
+                $bar->setVolume(($tick->getBidVolume() + $tick->getAskVolume()) / 100000);
                 $bar->setTickDate($tick->getDate());
-                $consumer->addTick($bar);
+                $consumer->addTick($bar, $tick);
                 $consumer->incrementBarsCount();
             } else {
                 // Aggregate tick to the bar
                 $bar->setHigh(max($bar->getHigh(), $tick->getBid()));
                 $bar->setLow(min($bar->getLow(), $tick->getBid()));
                 $bar->setClose($tick->getBid());
-                $bar->setVolume($bar->getVolume() + $tick->getBidVolume() + $tick->getAskVolume());
+                $bar->setVolume($bar->getVolume() + ($tick->getBidVolume() + $tick->getAskVolume()) / 100000);
                 $bar->setTickDate($tick->getDate());
-                $consumer->addTick($bar);
+                $consumer->addTick($bar, $tick);
             }
         }
 
@@ -200,6 +219,7 @@ function loopTickToTick(FileInterface $producer, FileInterface $consumer, Dateti
                 fwrite (STDERR, $progressSummary . PHP_EOL);
             }
         }
+        $previousTick = $tick;
     }
 }
 
@@ -234,6 +254,7 @@ function loopTickToBar(FileInterface $producer, FileInterface $consumer, Datetim
                 fwrite(STDERR, "Invalid tick : tick date (" . $tick->getDate()->format('Y:m:d H:i:s.u') . ") < bar date (" . $bar->getOpenDate()->format('Y-m-d H:i:s.u'). ")" . PHP_EOL) ;
             }
             if ($tick->getDate() >= $bar->getCloseDate()) {
+                // Current bar is finished. Send it to the consumer then and open a new one
                 $consumer->addBar($bar);
                 $consumer->incrementBarsCount();
 
@@ -261,7 +282,7 @@ function loopTickToBar(FileInterface $producer, FileInterface $consumer, Datetim
                 $percent = ($currentDate->getTimestamp() - $beginDate->getTimestamp()) / ($endDate->getTimestamp() - $beginDate->getTimestamp()) * 100;
                 $percent = number_format($percent, 3);
                 $progressDate = $currentDate;
-                $progressSummary = sprintf("processing date: %s progress: %s/100 mem: %s",
+                $progressSummary = sprintf("processing date: %s progress: %s/%% mem: %s",
                     $currentDate->format("Y-m-d H:i:s"),
                     $percent,
                     memory_get_usage(),
@@ -301,6 +322,10 @@ function getConsumer(string $filename): FileInterface {
         return new NullFile($filename);
     }
 
+    if ($filename == '-') {
+        return new StdoutFile('STDOUT');
+    }
+
     $extension = pathinfo($filename, PATHINFO_EXTENSION);
     switch (strtolower($extension)) {
         case 'fxt':
@@ -308,9 +333,6 @@ function getConsumer(string $filename): FileInterface {
 
         case 'csv':
             return new CsvFile($filename);
-
-        case '':
-            return new StdoutFile('STDOUT');
     }
 
     throw new RuntimeException("Unsupported file format: $extension");

@@ -4,7 +4,7 @@ use Uptacknerd\FxBtScripts\FxtFile;
 
 return [
     'vfx' => [
-        'server' => 'VantageInternational-Demo',
+        'server' => 'VantageFXInternational-Demo',
         'instrument' => [
             'XAUUSD+' =>  [ // Data collected from symbol properties
                 'digits'          => 2,
@@ -19,12 +19,11 @@ return [
                 'profitCalc'      => FxtFile::PROFIT_CALCULATION_FOREX,
                 '3daysSwap'       => 3,
                 'freeMargin'      => FxtFile::MARGIN_CALCULATION_MODE_CFD,
-                'baseCurrency'    => 'XAU',
+                'baseCurrency'    => 'USD',
                 'contractSize'    => 100,
                 //'marginStopout'   => FxtFile::MARGIN
-
             ],
-            'AUDCAD+' =>  [ // Data collected from symbol properties
+            'AUDCAD.duka' =>  [ // Data collected from symbol properties
                 'digits'          => 5,
                 'points'          => 0.02,
                 'minLot'          => 0.01,
@@ -40,6 +39,7 @@ return [
                 'baseCurrency'    => 'AUD',
                 'contractSize'    => 100000,
                 //'marginStopout'   => FxtFile::MARGIN
+            ],
         ],
     ],
 ];

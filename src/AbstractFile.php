@@ -6,6 +6,14 @@ use Uptacknerd\FxBtScripts\FileInterface;
 use Datetime;
 use RuntimeException;
 
+enum ENUM_DATA_TYPE
+{
+    case DATA_TYPE_NONE;
+    case DATA_TYPE_TICKS;
+    case DATA_TYPE_BARS;
+    case DATA_TYPE_BOTH;
+};
+
 abstract class AbstractFile implements FileInterface
 {
 
@@ -20,7 +28,7 @@ abstract class AbstractFile implements FileInterface
     const CONSUME_BOTH = 2;
 
     protected string $filename;
-    protected bool $useTemp;
+    protected bool $useTemp = false;
 
     protected $handle;
     protected int $timeframe; // in seconds
@@ -38,8 +46,28 @@ abstract class AbstractFile implements FileInterface
     protected array $bars = [];
     protected Datetime $currentBarDate;
 
+    /**
+     * Type of data to process : Ticks or bars
+     * @see
+     *
+     * @var int
+     */
+    protected int $inputType;
+
+    /**
+     * Type of data to process : Ticks or bars
+     * @see
+     *
+     * @var int
+     */
+    protected int $outputType;
+
     public function __construct(string $filename, bool $detectTimeframe = false) {
         $this->filename = $filename;
+    }
+
+    public function setOptions(array $args): bool {
+        return true;
     }
 
     protected function getTempFilename():string {
@@ -70,6 +98,7 @@ abstract class AbstractFile implements FileInterface
         }
 
         $filename = $this->filename;
+        $this->useTemp = false;
         if (in_array($mode, ['w', 'w+'])) {
             if (file_exists($this->filename) && !is_writable($this->filename)) {
                 throw new runtimeException("Output file already exists and is read only");
@@ -85,7 +114,9 @@ abstract class AbstractFile implements FileInterface
     }
 
     public function close() {
-        fclose($this->handle);
+        if (get_resource_type($this->handle) == 'stream') {
+            fclose($this->handle);
+        }
         if ($this->useTemp) {
             if (!rename($this->getFilename(), $this->filename)) {
                 throw new RuntimeException("Failed to rename temporary output file to its final name");
@@ -149,71 +180,82 @@ abstract class AbstractFile implements FileInterface
     }
 
     /**
-     * Get the type of data to feed depending on the producer
+     * when the object is a consumer, choose with the producer what to consume
      *
      * @param FileInterface $producer
-     * @return void
+     * @return ?int
      */
     public final function negociateInputType(FileInterface $producer, $preferTick = true): ?int {
         if ($producer->produceFormat() == AbstractFile::PRODUCE_NONE) {
+            $this->outputType = null;
             return null;
         }
 
         switch ($this->consumeFormat()) {
             case self::CONSUME_NONE:
-                return null;
+                $this->inputType = null;
+                return $this->inputType;
 
             default:
-                return self::CONSUME_BAR;
+                $this->inputType = self::CONSUME_BAR;
+                return $this->inputType;
 
             case self::CONSUME_BOTH:
                 if ($preferTick) {
                     if (in_array($producer->produceFormat(), [self::PRODUCE_BOTH, self::PRODUCE_TICK])) {
-                        return self::CONSUME_TICK;
+                        $this->inputType = self::CONSUME_TICK;
+                        return $this->inputType;
                     }
                 }
                 break;
 
             case self::CONSUME_TICK:
-                return self::CONSUME_TICK;
+                $this->inputType = self::CONSUME_TICK;
+                return $this->inputType;
                 break;
         }
 
-        return self::CONSUME_BAR;
+        $this->inputType = self::CONSUME_BAR;
+        return $this->inputType;
     }
 
     /**
-     * Undocumented function
+     * when the object is a producer, choose with the consumer what to produce
      *
      * @param FileInterface $consumer
-     * @return void
+     * @return ?int
      */
     public function negociateOutputType(FileInterface $consumer, $preferTick = true): ?int {
         if ($consumer->consumeFormat() == AbstractFile::CONSUME_NONE) {
+            $this->outputType = null;
             return null;
         }
 
         switch ($this->produceFormat()) {
             case self::PRODUCE_NONE:
-                return null;
+                $this->outputType = null;
+                return $this->outputType;
 
             default:
-                return self::PRODUCE_BAR;
+                $this->outputType = self::PRODUCE_BAR;
+                return $this->outputType;
 
             case self::PRODUCE_BOTH:
                 if ($preferTick) {
                     if (in_array($consumer->consumeFormat(), [self::CONSUME_BOTH, self::CONSUME_TICK])) {
-                        return self::PRODUCE_TICK;
+                        $this->outputType = self::PRODUCE_TICK;
+                        return $this->outputType;
                     }
                 }
                 break;
 
             case self::PRODUCE_TICK:
-                return self::PRODUCE_TICK;
+                $this->outputType = self::PRODUCE_TICK;
+                return $this->outputType;
         }
 
-        return self::PRODUCE_BAR;
-
+        $this->outputType = self::PRODUCE_BAR;
+        return $this->outputType;
     }
 
     public function aggregateBars() {

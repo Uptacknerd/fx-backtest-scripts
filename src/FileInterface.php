@@ -16,18 +16,56 @@ interface FileInterface
      */
     // public function isInjectable(): ?string;
 
+    /**
+     * Sets additional configuration options by parsing command line arguments
+     *
+     * @param array $args
+     * @return void
+     */
+    public function setOptions(array $args): bool;
+
     public function open(string $mode = 'r');
 
+    /**
+     * Seek file position to th specified date
+     *
+     * @param Datetime $date
+     * @return void
+     */
     public function seek(Datetime $date);
 
+    /**
+     * Seek to the last record
+     *
+     * @return void
+     */
     public function seekLast();
 
+    /**
+     * Seek to the first record
+     *
+     */
     public function seekFirst();
 
+    /**
+     * Give the datetime of the current record
+     *
+     * @return Datetime
+     */
     public function tell(): Datetime;
 
+    /**
+     * Get supported formats of this producer
+     *
+     * @return integer
+     */
     public function produceFormat(): int;
 
+    /**
+     * get supported format of this consumer
+     *
+     * @return integer
+     */
     public function consumeFormat(): int;
 
     public function negociateOutputType(FileInterface $producer, $preferTick = true): ?int;
@@ -44,9 +82,10 @@ interface FileInterface
      * Undocumented function
      *
      * @param Bar $bar A bar with a tick timestamp
+     * @param Tick $tick a tick to apend to the bar
      * @return void
      */
-    public function addTick(Bar $bar);
+    public function addTick(Bar $bar, Tick $tick);
 
     public function setTimeframe(int $timeframe);
 

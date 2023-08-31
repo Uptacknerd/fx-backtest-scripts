@@ -1,4 +1,7 @@
 <?php
+/**
+ * @see https://www.dukascopy.com/swiss/english/marketwatch/historical/
+ */
 
 namespace Uptacknerd\FxBtScripts;
 
@@ -15,6 +18,9 @@ class Bi5File extends AbstractFile
 
     /** @var string $mode File opening mode */
     private string $mode;
+
+    /** @var bool $compress Compress downloads ? */
+    private bool $compress = false;
 
     /** @var Datetime $position Position in the tick stream */
     private Datetime $position;
@@ -51,6 +57,18 @@ class Bi5File extends AbstractFile
         @mkdir($this->rawTmpDir);
     }
 
+    public function setOptions(array $args): bool {
+        if (isset($args['--compress'])) {
+            $this->compress = $args['--compress'];
+        }
+
+        if (isset($args['--point']) && $args['--point'] == (float) $args['--point']) {
+            $this->point = $args['--point'];
+        }
+
+        return true;
+    }
+
     public function isInjectable(): ?string {
         return null;
     }
@@ -63,6 +81,8 @@ class Bi5File extends AbstractFile
 
     public function open(string $mode = 'r')
     {
+        $this->useTemp = false;
+
         // Don't open the file as Bi5 is stored as a directory / file structure in FS
         $this->mode = $mode;
 
@@ -97,24 +117,30 @@ class Bi5File extends AbstractFile
 
         $cacheFile = $this->buildCacheFilename();
         if (!is_readable($cacheFile)) {
-            $this->downloadcurrentHourFile();
+            $this->downloadCurrentHourFile();
         }
         if (!file_exists($cacheFile)) {
             // Failed to dowload data (or save it)
             return [];
         }
-        $binData = file_get_contents($cacheFile);
-        $size = strlen($binData);
-        if ($size == 0) {
-            throw new RuntimeException("Failed to read cached data for " . $this->instrument . " at " . $this->position->format('Y-m-d H:i:s'));
+
+        if (filesize($cacheFile) == 0) {
+            return [];
+        }
+        if ($this->compress) {
+            $binData = file_get_contents($cacheFile);
+            $binData = gzuncompress($binData);
+            $binData = $this->unpackBi5Data($binData);
+        } else {
+            $binData = $this->unpackBi5File($cacheFile);
         }
 
         $hourTimestamp = $this->position->getTimestamp();
-        $binData = gzuncompress($binData);
+
         $size = strlen($binData); // Use size of uncompressed data
         $idx = 0;
         while ($idx < $size) {
-            //print "$idx $size\n";
+            // Get seconds and milliseconds
             $q = unpack('@' . $idx . '/N', $binData);
             $deltat = $q[1];
             $timesec = (int) ($hourTimestamp + $deltat / 1000);
@@ -122,14 +148,19 @@ class Bi5File extends AbstractFile
 
             $q = unpack('@' . ($idx + 4) . "/N", $binData);
             $ask = $q[1] * $this->point;
+
             $q = unpack('@' . ($idx + 8) . "/N", $binData);
             $bid = $q[1] * $this->point;
+
             $q = unpack('@' . ($idx + 12) . "/C4", $binData);
             $s = pack('C4', $q[4], $q[3], $q[2], $q[1]);
+
             $q = unpack('f', $s);
             $askvol = $q[1] * 1000000; // Volume in millions in the source data
+
             $q = unpack('@' . ($idx + 16) . "/C4", $binData);
             $s = pack('C4', $q[4], $q[3], $q[2], $q[1]);
+
             $q = unpack('f', $s);
             $bidvol = $q[1] * 1000000; // Volume in millions in the source data
 
@@ -186,7 +217,7 @@ class Bi5File extends AbstractFile
         throw new RuntimeException("Unsupported method " . __METHOD__);
     }
 
-    public function addTick(Bar $bar)
+    public function addTick(Bar $bar, Tick $tick)
     {
         throw new RuntimeException("Unsupported method " . __METHOD__);
     }
@@ -212,7 +243,7 @@ class Bi5File extends AbstractFile
     }
 
     /**
-     * get filename to cach the tick data in a format usable without 3rd party tool
+     * get filename to cache the tick data in a format usable without 3rd party tool
      * no native LZMA decompression available for PHP
      */
     private function buildCacheFilename(): string
@@ -224,8 +255,15 @@ class Bi5File extends AbstractFile
         $dir[] = $this->position->format('Y');
         $dir[] = $this->position->format('m');
         $dir[] = $this->position->format('d');
-        $dir[] = $this->position->format('H') . 'h_ticks.gz';
-        return implode(DIRECTORY_SEPARATOR, $dir);
+        $dir[] = $this->position->format('H') . 'h_ticks';
+        $filename =  implode(DIRECTORY_SEPARATOR, $dir);
+        if ($this->compress) {
+            $filename .= '.gz';
+        } else {
+            $filename .= '.bi5';
+        }
+
+        return $filename;
     }
 
     /**
@@ -255,7 +293,7 @@ class Bi5File extends AbstractFile
         return clone $this->position;
     }
 
-    private function downloadcurrentHourFile()
+    private function downloadCurrentHourFile()
     {
         $url = $this->buildUrl();
         curl_setopt($this->handle, CURLOPT_URL, $url);
@@ -307,12 +345,18 @@ class Bi5File extends AbstractFile
                         return;
                     }
                 }
-                $binaryTicks = $this->unpackBi5($result);
-                $this->saveToFile($binaryTicks);
+                //$result = $this->unpackBi5($result);
+                $this->saveToFile($result);
         }
     }
 
-    private function unpackBi5(string $bi5Data): string
+    /**
+     * Uncompress data from bi5 format
+     *
+     * @param string $bi5Data
+     * @return string raw binary data
+     */
+    private function unpackBi5Data(string $bi5Data): string
     {
         $bi5Filename = $this->bi5TmpDir . DIRECTORY_SEPARATOR . $this->position->format('H') . 'h_ticks.bi5';
         if (!is_writable($bi5Filename)) {
@@ -326,7 +370,7 @@ class Bi5File extends AbstractFile
         if ($this->iswindows) {
             $cmd = sprintf($this->extractCommand, $this->rawTmpDir, $bi5Filename);
             shell_exec($cmd);
-            $extracted = $this->rawTmpDir . DIRECTORY_SEPARATOR . basename($bi5Filename, '.bi5');
+            $extracted = $this->rawTmpDir . DIRECTORY_SEPARATOR . basename($bi5Filename, '.bin');
             if (!file_exists($extracted)) {
                 throw new RuntimeException("Failed to extract temorary bi5 file");
             }
@@ -350,13 +394,49 @@ class Bi5File extends AbstractFile
         return $bin;
     }
 
+    /**
+     * Uncompress .bi5 file
+     *
+     * @param string $filename
+     * @return string raw binary data
+     */
+    private function unpackBi5File(string $filename): string {
+        if ($this->iswindows) {
+            $cmd = sprintf($this->extractCommand, $this->rawTmpDir, $filename);
+            shell_exec($cmd);
+            $extracted = $this->rawTmpDir . DIRECTORY_SEPARATOR . basename($filename, '.bin');
+            if (!file_exists($extracted)) {
+                throw new RuntimeException("Failed to extract temorary bi5 file");
+            }
+            $bin = file_get_contents($extracted);
+            unlink($extracted);
+
+            return $bin;
+        }
+
+        $cmd = sprintf($this->extractCommand, $filename);
+        $bin = shell_exec($cmd);
+        if (strlen($bin) == 0) {
+            throw new RuntimeException("Failed to extract temporary bi5 file");
+        }
+
+        if (strlen($bin) % 20 != 0 ) {
+            fwrite(STDERR, "Warning: downlaod has an incorrect size: " . strlen($bin) . PHP_EOL);
+        }
+
+        return $bin;
+    }
+
     private function saveToFile(string $binaryTicks)
     {
         $filename = $this->buildCacheFilename();
         @mkdir(dirname($filename), 0774, true);
-        $gz = gzcompress($binaryTicks);
-        $size = file_put_contents($filename, $gz);
-        if ($size != strlen($gz)) {
+        $data = $binaryTicks;
+        if ($this->compress) {
+            $data = gzcompress($binaryTicks);
+        }
+        $size = file_put_contents($filename, $data);
+        if ($size != strlen($data)) {
             throw new RuntimeException("Failed write cache");
         }
     }
