@@ -104,7 +104,7 @@ class FxtFile extends AbstractFile
     private float    $swapSell = 0;       // Swap of the sell order - short overnight swap value
     private int      $threeDaysSwap = 3;  // 1 monday, 2 tuesday, 3 wednesday, and so on.
     private int      $leverage = 100;     // Account leverage
-    private int      $freeMarginCalculation = self::FREE_MARGIN_CALCULATION_NO;
+    private int      $freeMarginCalculation = self::FREE_MARGIN_CALCULATION_ALL;
     private int      $marginCalculation = self::MARGIN_CALCULATION_MODE_FOREX;
     private int      $marginStopoutLevel = 30;
     private int      $marginCheckMode = self::MARGIN_TYPE_PERCENT;
@@ -115,7 +115,7 @@ class FxtFile extends AbstractFile
     private string   $marginCurrency = 'USD';
 
     private float    $basicCommission = 0;
-    private int      $commissionType = self::BASIC_COMMISSION_TYPE_MONEY;
+    private int      $commissionType = self::BASIC_COMMISSION_TYPE_PIPS;
     private int      $commission = self::COMMISSION_PER_LOT;
 
     private int      $firstModelingBarIndex = 1; // Index of the first bar at which modeling started (0 for the first bar).
@@ -714,7 +714,7 @@ class FxtFile extends AbstractFile
                 $bar->getHigh(),
                 $bar->getLow(),
                 $bar->getClose(),
-                max($bar->getVolume() / 1000000, 1),
+                max($bar->getVolume(), 1),
                 $bar->getTickDate()->getTimestamp(),
                 4 // A flag telling how to wake the EA. Unclear at the moment. Values 0 and 4 observed in original tool and other tools
             )
@@ -781,8 +781,11 @@ class FxtFile extends AbstractFile
         global $CONFIG;
 
         $this->symbol = $symbol;
+        $symbol = substr($symbol, 0, 6);
         $this->setServerName($CONFIG->getServer('vfx'));
         $this->setDigits($CONFIG->getDigits('vfx', $symbol));
+        $this->setTickSize($CONFIG->getTickSize('vfx', $symbol));
+        $this->setTickValue($CONFIG->getTickValue('vfx', $symbol));
         $this->setPointSize($CONFIG->getPointSize('vfx', $symbol));
         $this->setMinLotSize($CONFIG->getMinLot('vfx', $symbol));
         $this->setMaxLotSize($CONFIG->getMaxLot('vfx', $symbol));

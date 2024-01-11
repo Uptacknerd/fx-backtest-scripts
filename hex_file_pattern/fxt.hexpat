@@ -42,7 +42,7 @@ struct Header {
 
     u32    Leverage;
 
-    u32    FreeMarginCAlculation;
+    u32    FreeMarginCalculation;
     u32    MarginCalculation;
     u32    MarginStopoutLevel;
     u32    MarginCheckMode;

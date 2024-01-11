@@ -104,4 +104,20 @@ class Config {
 
         return $this->config['broker'][$broker]['instrument'][$instrument]['contractSize'];
     }
+
+    public function getTickSize(string $broker, string $instrument): string {
+        if (!isset($this->config['broker'][$broker]['instrument'][$instrument]['tickSize'])) {
+            throw new RuntimeException("Broker not defined or incomplete in configuration file");
+        }
+
+        return $this->config['broker'][$broker]['instrument'][$instrument]['tickSize'];
+    }
+
+    public function getTickValue(string $broker, string $instrument): string {
+        if (!isset($this->config['broker'][$broker]['instrument'][$instrument]['tickValue'])) {
+            throw new RuntimeException("Broker not defined or incomplete in configuration file");
+        }
+
+        return $this->config['broker'][$broker]['instrument'][$instrument]['tickValue'];
+    }
 }

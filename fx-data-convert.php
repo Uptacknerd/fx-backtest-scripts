@@ -20,29 +20,32 @@ require_once __DIR__ . '/vendor/autoload.php';
 
     $doc = <<<DOC
     Usage:
-      fx-data-convert.php --input in_file --timeframe timeframe --symbol symbol --output-type model [--output-format format] [--output out_file] [--spread spread] [--begin date] [--end date] [--compress] [--point=point]
+      fx-data-convert.php --input in_file --output out_file --symbol symbol --timeframe timeframe --output-type model [--output-format format] [--spread spread] [--begin date] [--end date] [--compress] [--point=point]
       fx-data-convert.php --version
 
     Options:
       -h --help                   Show this screen.
       --version                   Show version.
       -c --config config          Name of a server configuration (not implemented yet)
-      -i --input=in_file          file to read data from
+      -in --input=in_file         file to read data from
+      -out --output=file          Filename where data are written
       -b --begin=date             Date where the convertion should begin (UTC)
       -e --end=date               Date where the conversion should finish (UTC)
-      -o --output=file            Filename where data are written
       --symbol=symbol             Symbol
-      -t --timeframe=timeframe    Timeframe
-      -ot --output-type=type      tick | bar : output ticks or bars
-      -of --output-format=format  MT4-tick | MT4-bar | MT5-tick | MT5-bar | OHLCV : output format
+      --timeframe=timeframe       Timeframe
+      --output-type=type          tick | bar : output ticks or bars
+      --output-format=format      MT4-tick | MT4-bar | MT5-tick | MT5-bar | OHLCV : output format
       -s --spread=spread          Spread
       -p --point=point            Point value (ex: 0.01 for NAS100)
       -c --compress               Compress cached data
+
+    Examples:
+      fx-data-convert.php --input XAUUSD.bi5 --output XAUUSDduka15_0.fxt --symbol XAUUSD --timeframe M1 --output-type bar
     DOC;
 
     $CONFIG = new Config();
 
-    $args = Docopt::handle($doc, array('version'=>'FX data converter v1.0'));
+    $args = Docopt::handle($doc, ['version' => 'FX data converter v1.0']);
 
     $args['--output'] = $args['--output'] ?? 'null';
     if (!in_array($args['--output-type'], ['tick', 'bar'])) {
@@ -50,7 +53,12 @@ require_once __DIR__ . '/vendor/autoload.php';
         die();
     }
 
-    $producer = getProducer($args['--input']);
+    try {
+        $producer = getProducer($args['--input']);
+    } catch (RuntimeException $e) {
+        echo "Error: " . $e->getMessage() . PHP_EOL;
+        die();
+    }
     $producer->setOptions(iterator_to_array($args));
     $producer->open('r');
 
@@ -96,7 +104,12 @@ require_once __DIR__ . '/vendor/autoload.php';
         throw new RuntimeException("Begin date must be smaller than end date");
     }
 
-    $consumer = getConsumer($args['--output']);
+    try {
+        $consumer = getConsumer($args['--output']);
+    } catch (RuntimeException $e) {
+        echo "Error: " . $e->getMessage() . PHP_EOL;
+        die();
+    }
     $consumer->setOptions(iterator_to_array($args));
     $consumer->setStartDate($beginDate);
     $consumer->setEndDate($endDate);
@@ -303,6 +316,9 @@ function getProducer(string $filename): FileInterface {
     }
 
     $extension = pathinfo($filename, PATHINFO_EXTENSION);
+    if ($extension == '') {
+        throw new RuntimeException("Cannot input detect file format");
+    }
     switch (strtolower($extension)) {
         case 'fxt':
             return new FxtFile($filename, true);
@@ -327,6 +343,10 @@ function getConsumer(string $filename): FileInterface {
     }
 
     $extension = pathinfo($filename, PATHINFO_EXTENSION);
+    $extension = pathinfo($filename, PATHINFO_EXTENSION);
+    if ($extension == '') {
+        throw new RuntimeException("Cannot output detect file format");
+    }
     switch (strtolower($extension)) {
         case 'fxt':
             return new FxtFile($filename);

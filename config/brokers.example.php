@@ -6,7 +6,7 @@ return [
     'vfx' => [
         'server' => 'VantageInternational-Demo',
         'instrument' => [
-            'XAUUSD+' =>  [ // Data collected from symbol properties
+            'XAUUSD' =>  [ // Data collected from symbol properties
                 'digits'          => 2,
                 'points'          => 0.02,
                 'minLot'          => 0.01,
@@ -24,7 +24,7 @@ return [
                 //'marginStopout'   => FxtFile::MARGIN
 
             ],
-            'AUDCAD+' =>  [ // Data collected from symbol properties
+            'AUDCAD' =>  [ // Data collected from symbol properties
                 'digits'          => 5,
                 'points'          => 0.02,
                 'minLot'          => 0.01,
